@@ -14,6 +14,7 @@ from virtual_labs.infrastructure.kc.models import AuthUser
 from virtual_labs.repositories.group_repo import GroupQueryRepository
 from virtual_labs.repositories.project_repo import ProjectQueryRepository
 from virtual_labs.repositories.user_repo import UserQueryRepository
+from virtual_labs.shared.utils.auth import get_user_id_from_auth
 
 
 async def search_projects_by_name_use_case(
@@ -23,8 +24,7 @@ async def search_projects_by_name_use_case(
     gqr = GroupQueryRepository()
     uqr = UserQueryRepository()
 
-    user, _ = auth
-    user_id = user.sub
+    user_id = get_user_id_from_auth(auth)
 
     if not query_term:
         raise VliError(
@@ -33,7 +33,7 @@ async def search_projects_by_name_use_case(
             message="No search query provided",
         )
     try:
-        groups = gqr.retrieve_user_groups(user_id=user_id)
+        groups = gqr.retrieve_user_groups(user_id=str(user_id))
         group_ids = [g.id for g in groups]
         projects_vl_tuple = pr.search(
             query_term=query_term,

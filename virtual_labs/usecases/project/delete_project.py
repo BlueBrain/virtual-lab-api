@@ -1,7 +1,6 @@
 from http import HTTPStatus as status
 from json import loads
 from typing import Tuple
-from uuid import UUID
 
 from fastapi.responses import Response
 from keycloak import KeycloakError  # type: ignore
@@ -22,6 +21,7 @@ from virtual_labs.repositories.project_repo import (
     ProjectMutationRepository,
     ProjectQueryRepository,
 )
+from virtual_labs.shared.utils.auth import get_user_id_from_auth
 
 
 async def delete_project_use_case(
@@ -33,7 +33,7 @@ async def delete_project_use_case(
 ) -> Response | VliError:
     pqr = ProjectQueryRepository(session)
     pmr = ProjectMutationRepository(session)
-    user, _ = auth
+    user_id = get_user_id_from_auth(auth)
 
     try:
         vl_project = pqr.retrieve_one_project(
@@ -65,7 +65,7 @@ async def delete_project_use_case(
         ) = pmr.delete_project(
             virtual_lab_id=virtual_lab_id,
             project_id=project_id,
-            user_id=UUID(user.sub),
+            user_id=user_id,
         )
 
     except SQLAlchemyError:

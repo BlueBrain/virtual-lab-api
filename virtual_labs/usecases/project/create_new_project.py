@@ -1,6 +1,6 @@
 from http import HTTPStatus as status
 from typing import Tuple
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from fastapi.responses import Response
 from keycloak import KeycloakError  # type: ignore
@@ -23,6 +23,7 @@ from virtual_labs.repositories.project_repo import (
     ProjectQueryRepository,
 )
 from virtual_labs.repositories.user_repo import UserMutationRepository
+from virtual_labs.shared.utils.auth import get_user_id_from_auth
 
 
 async def create_new_project_use_case(
@@ -38,8 +39,8 @@ async def create_new_project_use_case(
     umr = UserMutationRepository()
 
     project_id: UUID4 = uuid4()
-    user, _ = auth
-    user_id = user.sub
+    user_id = get_user_id_from_auth(auth)
+
     try:
         get_virtual_lab(session, virtual_lab_id)
 
@@ -80,7 +81,7 @@ async def create_new_project_use_case(
 
         # TODO: to asyncio need to run in parallel
         umr.attach_user_to_group(
-            user_id=UUID(user_id),
+            user_id=user_id,
             group_id=admin_group_id,
         )
         if payload.include_members:
@@ -140,7 +141,7 @@ async def create_new_project_use_case(
             nexus_project_id=nexus_project_id,
             admin_group_id=admin_group_id,
             member_group_id=member_group_id,
-            owner_id=UUID(user_id),
+            owner_id=user_id,
         )
     except AssertionError:
         raise VliError(

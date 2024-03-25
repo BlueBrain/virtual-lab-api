@@ -1,7 +1,6 @@
 from http import HTTPStatus as status
 from json import loads
 from typing import Tuple
-from uuid import UUID
 
 from fastapi.responses import Response
 from keycloak import KeycloakError  # type: ignore
@@ -22,6 +21,7 @@ from virtual_labs.repositories.user_repo import (
     UserMutationRepository,
     UserQueryRepository,
 )
+from virtual_labs.shared.utils.auth import get_user_id_from_auth
 
 
 async def update_user_role_in_project(
@@ -36,10 +36,9 @@ async def update_user_role_in_project(
     uqr = UserQueryRepository()
     umr = UserMutationRepository()
 
-    user, _ = auth
-    user_req_id = user.sub
+    user_req_id = get_user_id_from_auth(auth)
 
-    if UUID(user_req_id).int == user_id.int:
+    if user_req_id.int == user_id.int:
         raise VliError(
             error_code=VliErrorCode.NOT_ALLOWED_OP,
             http_status_code=status.FORBIDDEN,

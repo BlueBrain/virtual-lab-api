@@ -14,6 +14,7 @@ from virtual_labs.domain.project import Project, VirtualLabModel
 from virtual_labs.infrastructure.kc.models import AuthUser
 from virtual_labs.repositories.group_repo import GroupQueryRepository
 from virtual_labs.repositories.project_repo import ProjectQueryRepository
+from virtual_labs.shared.utils.auth import get_user_id_from_auth
 
 
 async def retrieve_all_user_projects_per_vl_use_case(
@@ -25,11 +26,10 @@ async def retrieve_all_user_projects_per_vl_use_case(
 ) -> Response | VliError:
     pr = ProjectQueryRepository(session)
     gqr = GroupQueryRepository()
-    user, _ = auth
-    user_id = user.sub
+    user_id = get_user_id_from_auth(auth)
 
     try:
-        groups = gqr.retrieve_user_groups(user_id=user_id)
+        groups = gqr.retrieve_user_groups(user_id=str(user_id))
         group_ids = [g.id for g in groups]
 
         results = pr.retrieve_projects_per_vl_batch(

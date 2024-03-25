@@ -1,6 +1,5 @@
 from http import HTTPStatus as status
 from typing import Tuple
-from uuid import UUID
 
 from fastapi.responses import Response
 from loguru import logger
@@ -12,6 +11,7 @@ from virtual_labs.core.response.api_response import VliResponse
 from virtual_labs.domain.project import Project
 from virtual_labs.infrastructure.kc.models import AuthUser
 from virtual_labs.repositories.project_repo import ProjectQueryRepository
+from virtual_labs.shared.utils.auth import get_user_id_from_auth
 
 
 async def retrieve_starred_projects_use_case(
@@ -20,10 +20,8 @@ async def retrieve_starred_projects_use_case(
     pr = ProjectQueryRepository(session)
 
     try:
-        user, _ = auth
-        user_id = user.sub
-
-        projects = pr.retrieve_starred_projects_per_user(UUID(user_id))
+        user_id = get_user_id_from_auth(auth)
+        projects = pr.retrieve_starred_projects_per_user(user_id)
     except SQLAlchemyError:
         raise VliError(
             error_code=VliErrorCode.DATABASE_ERROR,
