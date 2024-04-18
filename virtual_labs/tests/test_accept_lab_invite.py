@@ -62,7 +62,7 @@ def get_invite_token_from_email(recipient_email: str) -> str:
 
 
 @pytest.mark.asyncio
-async def test_invite_user_to_lab(
+async def test_accept_invitation(
     mock_lab_invite: tuple[AsyncClient, str, str, str],
 ) -> None:
     client, lab_id, invitee_username, invitee_email = mock_lab_invite
