@@ -12,7 +12,7 @@ from pydantic import (
 
 
 class ShortenedUser(BaseModel):
-    id: UUID4
+    id: UUID4 | None
     username: str
     createdTimestamp: Annotated[datetime, Field(alias="created_at", default="")]
     first_name: Annotated[

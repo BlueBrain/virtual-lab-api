@@ -3,8 +3,7 @@ from typing import Annotated, Any, List
 from pydantic import UUID4, BaseModel, EmailStr, Field
 
 
-class UserRepresentation(BaseModel):
-    id: str
+class BaseUserRepresentation(BaseModel):
     username: str
     firstName: str | None = None
     lastName: str | None = None
@@ -19,6 +18,14 @@ class UserRepresentation(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class UserRepresentation(BaseUserRepresentation):
+    id: str
+
+
+class UserNotInKCRepresentation(BaseUserRepresentation):
+    id: None
 
 
 class GroupRepresentation(BaseModel):

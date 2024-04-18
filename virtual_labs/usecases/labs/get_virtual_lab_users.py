@@ -8,7 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from virtual_labs.core.exceptions.api_error import VliError, VliErrorCode
 from virtual_labs.core.types import UserRoleEnum
 from virtual_labs.domain.labs import UserWithInviteStatus, VirtualLabUsers
-from virtual_labs.infrastructure.kc.models import UserRepresentation
+from virtual_labs.infrastructure.kc.models import (
+    UserNotInKCRepresentation,
+    UserRepresentation,
+)
 from virtual_labs.repositories import labs as lab_repository
 from virtual_labs.repositories.group_repo import GroupQueryRepository
 from virtual_labs.repositories.invite_repo import InviteQueryRepository
@@ -17,11 +20,13 @@ from virtual_labs.repositories.user_repo import UserQueryRepository
 
 def get_pending_user(
     user: UserRepresentation | None, user_email: EmailStr
-) -> UserRepresentation:
+) -> UserRepresentation | UserNotInKCRepresentation:
     """Creates a dummy UserRepresentation object if user is not yet registered on KeyCloak"""
     if user is None:
-        return UserRepresentation(
-            id="unknown",
+        return UserNotInKCRepresentation(
+            id=None,
+            firstName="unknown",
+            lastName="unknown",
             username=user_email,
             email=user_email,
             emailVerified=False,
