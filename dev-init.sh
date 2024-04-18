@@ -40,7 +40,7 @@ if [ "$IS_CI" == "True" ]; then
     DEPLOYMENT_ENV=env make dev &
 
     echo "Checking that virtual lab server is ready to accept connections..."
-    curl --retry 30 -f --retry-all-errors --retry-delay 2 -s -o /dev/null "http://localhost:8000/health"
+    curl --retry 30 -f --retry-all-errors --retry-delay 2 -s -o /dev/null "http://localhost:8000/healthz"
     echo "Server is ready"
   
   else
