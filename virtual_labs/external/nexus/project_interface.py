@@ -509,7 +509,6 @@ class NexusProjectInterface:
             # response.raise_for_status()
 
             data = response.json()
-            print("da", data)
             return NexusProject(**data)
         except Exception as ex:
             logger.error(f"Error during update nexus project {ex}")

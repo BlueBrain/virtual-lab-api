@@ -35,7 +35,6 @@ async def retrieve_all_user_projects_use_case(
             groups=group_ids,
             pagination=pagination,
         )
-        print("resu", results)
 
         projects = [
             {

@@ -3,9 +3,7 @@ from typing import AsyncGenerator, cast
 from uuid import uuid4
 
 from httpx import AsyncClient, Response
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,
-)
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from virtual_labs.infrastructure.db.config import session_pool
 from virtual_labs.infrastructure.kc.config import kc_auth
@@ -21,7 +19,6 @@ async def session_context_factory() -> AsyncGenerator[AsyncSession, None]:
 
 def auth(username: str = "test") -> str:
     token = kc_auth.token(username=username, password="test")
-    # print("TOKEN", token)
     return cast(str, token["access_token"])
 
 
