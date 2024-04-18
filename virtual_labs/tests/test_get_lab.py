@@ -1,9 +1,11 @@
-from typing import AsyncGenerator, cast
+import copy
+from http import HTTPStatus
+from typing import Any, AsyncGenerator, cast
 from uuid import uuid4
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient
+from httpx import AsyncClient, Response
 
 from virtual_labs.tests.utils import get_headers
 
@@ -44,8 +46,12 @@ async def mock_lab_create(
     yield client, lab_id, project_id, headers
 
     lab_id = response.json()["data"]["virtual_lab"]["id"]
-    response = await client.delete(f"/virtual-labs/{lab_id}", headers=get_headers())
-    assert response.status_code == 200
+
+    try:
+        response = await client.delete(f"/virtual-labs/{lab_id}", headers=get_headers())
+        assert response.status_code == HTTPStatus.OK
+    except Exception:
+        assert response.status_code == HTTPStatus.NOT_FOUND
 
 
 @pytest.mark.asyncio
@@ -65,8 +71,31 @@ async def test_get_lab_by_id(
     assert lab["users"][0]["invite_accepted"] is True
 
 
+def assert_get_and_delete_body_are_same(
+    get_response: Response, delete_response: Response
+) -> None:
+    """Checks that virtual lab in the response of get and delete endpoints are the same (except the `deleted` and `deleted_at` values, which will be different)."""
+    delete_body = copy.deepcopy(
+        cast(dict[str, Any], delete_response.json()["data"]["virtual_lab"])
+    )
+    assert delete_body["deleted"] is True
+    assert delete_body["deleted_at"] is not None
+    del delete_body["deleted"]
+    del delete_body["deleted_at"]
+
+    get_body = copy.deepcopy(
+        cast(dict[str, Any], get_response.json()["data"]["virtual_lab"])
+    )
+    assert get_body["deleted"] is False
+    assert get_body["deleted_at"] is None
+    del get_body["deleted"]
+    del get_body["deleted_at"]
+
+    assert delete_body == get_body
+
+
 @pytest.mark.asyncio
-async def test_update_lab_has_same_response_as_get_lab_by_id(
+async def test_get_udpate_delete_response_are_same(
     mock_lab_create: tuple[AsyncClient, str, str, dict[str, str]],
 ) -> None:
     client, lab_id, project_id, headers = mock_lab_create
@@ -77,3 +106,7 @@ async def test_update_lab_has_same_response_as_get_lab_by_id(
 
     assert update_response.status_code == get_response.status_code == 200
     assert update_response.json()["data"] == get_response.json()["data"]
+
+    delete_response = await client.delete(f"/virtual-labs/{lab_id}", headers=headers)
+    assert delete_response.status_code == get_response.status_code == 200
+    assert_get_and_delete_body_are_same(get_response, delete_response)

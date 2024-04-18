@@ -42,7 +42,7 @@ def verify_vlab_write(f: Callable[..., Any]) -> Callable[..., Any]:
         except SQLAlchemyError:
             raise VliError(
                 error_code=VliErrorCode.DATABASE_ERROR,
-                http_status_code=status.BAD_REQUEST,
+                http_status_code=status.NOT_FOUND,
                 message="No VL with this id found",
             )
         except UserNotInList:

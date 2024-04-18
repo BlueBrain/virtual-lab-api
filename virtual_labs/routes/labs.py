@@ -13,12 +13,10 @@ from virtual_labs.domain.invite import AddUser
 from virtual_labs.domain.labs import (
     CreateLabOut,
     InviteSent,
-    Lab,
     LabByIdOut,
     LabResponse,
     SearchLabResponse,
     VirtualLabCreate,
-    VirtualLabDomain,
     VirtualLabUpdate,
     VirtualLabUser,
     VirtualLabUsers,
@@ -201,16 +199,12 @@ async def remove_user_from_virtual_lab(
     return LabResponse[None](message="User removed from virtual lab", data=None)
 
 
-@router.delete("/{virtual_lab_id}", response_model=LabResponse[Lab])
+@router.delete("/{virtual_lab_id}", response_model=LabResponse[LabByIdOut])
 @verify_vlab_write
 async def delete_virtual_lab(
     virtual_lab_id: UUID4,
     session: AsyncSession = Depends(default_session_factory),
     auth: tuple[AuthUser, str] = Depends(verify_jwt),
-) -> LabResponse[Lab]:
-    deleted_lab = Lab(
-        virtual_lab=VirtualLabDomain.model_validate(
-            await usecases.delete_virtual_lab(session, virtual_lab_id, auth=auth)
-        )
-    )
-    return LabResponse[Lab](message="Deleted virtual lab", data=deleted_lab)
+) -> LabResponse[LabByIdOut]:
+    deleted_lab = await usecases.delete_virtual_lab(session, virtual_lab_id, auth=auth)
+    return LabResponse[LabByIdOut](message="Deleted virtual lab", data=deleted_lab)
