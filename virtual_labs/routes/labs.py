@@ -129,20 +129,18 @@ async def create_virtual_lab(
     return LabResponse[CreateLabOut](message="Newly created virtual lab", data=result)
 
 
-@router.patch("/{virtual_lab_id}", response_model=LabResponse[Lab])
+@router.patch("/{virtual_lab_id}", response_model=LabResponse[LabByIdOut])
 @verify_vlab_write
 async def update_virtual_lab(
     virtual_lab_id: UUID4,
     lab: VirtualLabUpdate,
     session: AsyncSession = Depends(default_session_factory),
     auth: tuple[AuthUser, str] = Depends(verify_jwt),
-) -> LabResponse[Lab]:
-    udpated_lab = Lab(
-        virtual_lab=VirtualLabDomain.model_validate(
-            await usecases.update_virtual_lab(session, virtual_lab_id, lab=lab)
-        )
+) -> LabResponse[LabByIdOut]:
+    udpated_lab = await usecases.update_virtual_lab(
+        session, virtual_lab_id, lab=lab, user_id=get_user_id_from_auth(auth)
     )
-    return LabResponse[Lab](message="Updated virtual lab", data=udpated_lab)
+    return LabResponse[LabByIdOut](message="Updated virtual lab", data=udpated_lab)
 
 
 @router.post(

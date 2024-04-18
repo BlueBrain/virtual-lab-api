@@ -49,7 +49,7 @@ async def mock_lab_create(
 
 
 @pytest.mark.asyncio
-async def test_update_lab(
+async def test_get_lab_by_id(
     mock_lab_create: tuple[AsyncClient, str, str, dict[str, str]],
 ) -> None:
     client, lab_id, project_id, headers = mock_lab_create
@@ -63,3 +63,17 @@ async def test_update_lab(
     assert len(lab["users"]) == 1
     assert lab["users"][0]["username"] == "test"
     assert lab["users"][0]["invite_accepted"] is True
+
+
+@pytest.mark.asyncio
+async def test_update_lab_has_same_response_as_get_lab_by_id(
+    mock_lab_create: tuple[AsyncClient, str, str, dict[str, str]],
+) -> None:
+    client, lab_id, project_id, headers = mock_lab_create
+    update_response = await client.patch(
+        f"/virtual-labs/{lab_id}", headers=headers, json={"plan_id": 2}
+    )
+    get_response = await client.get(f"/virtual-labs/{lab_id}", headers=headers)
+
+    assert update_response.status_code == get_response.status_code == 200
+    assert update_response.json()["data"] == get_response.json()["data"]

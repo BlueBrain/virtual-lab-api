@@ -7,19 +7,27 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from virtual_labs.core.exceptions.api_error import VliError, VliErrorCode
 from virtual_labs.domain import labs as domain
-from virtual_labs.infrastructure.db import models
 from virtual_labs.repositories import labs as repository
+from virtual_labs.usecases.labs.get_virtual_lab_users import get_virtual_lab_users
+from virtual_labs.usecases.labs.lab_with_not_deleted_projects import (
+    lab_with_not_deleted_projects,
+)
 from virtual_labs.usecases.plans.verify_plan import verify_plan
 
 
 async def update_virtual_lab(
-    db: AsyncSession, lab_id: UUID4, lab: domain.VirtualLabUpdate
-) -> models.VirtualLab:
+    db: AsyncSession, lab_id: UUID4, lab: domain.VirtualLabUpdate, user_id: UUID4
+) -> domain.LabByIdOut:
     try:
         if lab.plan_id is not None:
             await verify_plan(db, lab.plan_id)
-        return await repository.update_virtual_lab(db, lab_id, lab)
-
+        db_lab = await repository.update_virtual_lab(db, lab_id, lab)
+        lab_with_projects = lab_with_not_deleted_projects(db_lab, user_id)
+        users = (await get_virtual_lab_users(db, lab_id)).users
+        lab_with_users = domain.VirtualLabWithUsers.model_validate(
+            lab_with_projects.model_copy(update={"users": users})
+        )
+        return domain.LabByIdOut(virtual_lab=lab_with_users)
     except IntegrityError as error:
         logger.error(
             "Virtual lab {} update could not be processed for unknown database error {}".format(
