@@ -6,7 +6,7 @@ import pytest_asyncio
 from httpx import AsyncClient, Response
 from requests import get
 
-from virtual_labs.tests.utils import get_headers
+from virtual_labs.tests.utils import cleanup_resources, get_headers
 
 email_server_baseurl = "http://localhost:8025"
 
@@ -33,11 +33,7 @@ async def mock_lab_create(
     lab_id = response.json()["data"]["virtual_lab"]["id"]
     yield client, lab_id, headers
 
-    lab_id = response.json()["data"]["virtual_lab"]["id"]
-    delete_response = await client.delete(
-        f"/virtual-labs/{lab_id}", headers=get_headers()
-    )
-    assert delete_response.status_code == 200
+    await cleanup_resources(client=client, lab_id=lab_id)
 
 
 def assert_invite_response(response: Response) -> None:

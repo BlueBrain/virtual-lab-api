@@ -122,6 +122,7 @@ async def mock_create_vl_projects(
             await client.delete(
                 f"/virtual-labs/{vl_id}",
             )
+
             async with session_context_factory() as session:
                 await session.execute(
                     statement=delete(Project).where(Project.id.in_(projects))

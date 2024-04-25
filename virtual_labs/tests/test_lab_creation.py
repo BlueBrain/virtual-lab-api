@@ -8,7 +8,7 @@ from requests import get
 
 from virtual_labs.infrastructure.settings import settings
 from virtual_labs.repositories.group_repo import GroupQueryRepository
-from virtual_labs.tests.utils import get_client_headers, get_headers
+from virtual_labs.tests.utils import cleanup_resources, get_client_headers, get_headers
 
 
 @pytest_asyncio.fixture
@@ -33,8 +33,7 @@ async def mock_lab_create(
     yield response, headers
 
     lab_id = response.json()["data"]["virtual_lab"]["id"]
-    response = await client.delete(f"/virtual-labs/{lab_id}", headers=get_headers())
-    assert response.status_code == 200
+    await cleanup_resources(client=client, lab_id=lab_id)
 
 
 @pytest_asyncio.fixture
@@ -63,8 +62,7 @@ async def mock_lab_create_with_users(
     yield body, response, client, headers
 
     lab_id = response.json()["data"]["virtual_lab"]["id"]
-    response = await client.delete(f"/virtual-labs/{lab_id}", headers=get_headers())
-    assert response.status_code == 200
+    await cleanup_resources(client=client, lab_id=lab_id)
 
 
 def assert_users_in_lab(response: Response) -> None:

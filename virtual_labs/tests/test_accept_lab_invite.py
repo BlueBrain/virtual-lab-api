@@ -6,6 +6,7 @@ from httpx import AsyncClient, Response
 from requests import get
 
 from virtual_labs.tests.utils import (
+    cleanup_resources,
     create_mock_lab,
     email_server_baseurl,
     get_headers,
@@ -31,10 +32,7 @@ async def mock_lab_invite(
 
     yield async_test_client, lab_id, invitee_username, invitee_email
 
-    response = await async_test_client.delete(
-        f"/virtual-labs/{lab_id}", headers=headers
-    )
-    assert response.status_code == 200
+    await cleanup_resources(client=async_test_client, lab_id=lab_id)
 
 
 def assert_right_users_in_lab(response: Response) -> None:

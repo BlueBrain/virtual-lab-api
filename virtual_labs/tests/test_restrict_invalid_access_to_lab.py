@@ -6,7 +6,7 @@ import pytest
 import pytest_asyncio
 from httpx import AsyncClient
 
-from virtual_labs.tests.utils import get_headers
+from virtual_labs.tests.utils import cleanup_resources, get_headers
 
 member_user = "test"
 non_member_user = "test-2"
@@ -35,8 +35,7 @@ async def mock_lab_create(
 
     yield client, lab_id, headers
 
-    response = await client.delete(f"/virtual-labs/{lab_id}", headers=get_headers())
-    assert response.status_code == 200
+    await cleanup_resources(client=client, lab_id=lab_id)
 
 
 @pytest.mark.asyncio

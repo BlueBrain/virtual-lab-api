@@ -5,7 +5,7 @@ import pytest
 import pytest_asyncio
 from httpx import AsyncClient, Response
 
-from virtual_labs.tests.utils import get_headers
+from virtual_labs.tests.utils import cleanup_resources, get_headers
 
 
 @pytest_asyncio.fixture
@@ -33,6 +33,8 @@ async def mock_lab_create(
     newly_created_lab = await client.get(f"/virtual-labs/{lab_id}", headers=headers)
     assert newly_created_lab.status_code == 200
     yield client, response, headers
+
+    await cleanup_resources(client=async_test_client, lab_id=lab_id)
 
 
 @pytest.mark.asyncio

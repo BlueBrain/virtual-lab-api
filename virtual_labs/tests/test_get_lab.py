@@ -1,15 +1,12 @@
 import copy
-from http import HTTPStatus
 from typing import Any, AsyncGenerator, cast
 from uuid import uuid4
 
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, Response
-from sqlalchemy import delete
 
-from virtual_labs.infrastructure.db.models import Project, VirtualLab
-from virtual_labs.tests.utils import get_headers, session_context_factory
+from virtual_labs.tests.utils import cleanup_resources, get_headers
 
 
 @pytest_asyncio.fixture
@@ -46,53 +43,7 @@ async def mock_lab_create(
     project_id = cast("str", project_response.json()["data"]["project"]["id"])
 
     yield client, lab_id, project_id, headers
-
-    lab_id = lab_delete_response.json()["data"]["virtual_lab"]["id"]
-
-    try:
-        project_delete_response = await client.delete(
-            f"/virtual-labs/{lab_id}/projects/{project_id}", headers=get_headers()
-        )
-        assert project_delete_response.status_code == HTTPStatus.OK
-    except Exception:
-        assert (
-            project_delete_response.status_code == HTTPStatus.BAD_REQUEST
-        )  # TODO: The response code for deleting already deleted lab and project should be the same.
-
-    try:
-        lab_delete_response = await client.delete(
-            f"/virtual-labs/{lab_id}", headers=get_headers()
-        )
-        assert lab_delete_response.status_code == HTTPStatus.OK
-    except Exception:
-        assert lab_delete_response.status_code == HTTPStatus.NOT_FOUND
-
-    async with session_context_factory() as session:
-        project_data = (
-            await session.execute(
-                statement=delete(Project)
-                .where(Project.id == project_id)
-                .returning(
-                    Project.admin_group_id,
-                    Project.member_group_id,
-                    Project.nexus_project_id,
-                )
-            )
-        ).one()
-        lab_data = (
-            await session.execute(
-                statement=delete(VirtualLab)
-                .where(VirtualLab.id == lab_id)
-                .returning(
-                    VirtualLab.admin_group_id,
-                    VirtualLab.member_group_id,
-                    VirtualLab.nexus_organization_id,
-                )
-            )
-        ).one()
-        await session.commit()
-        print(f"Project data {project_data}")
-        print(f"Lab data {lab_data}")
+    await cleanup_resources(client=client, lab_id=lab_id, project_id=project_id)
 
 
 @pytest.mark.asyncio

@@ -6,7 +6,7 @@ import pytest
 import pytest_asyncio
 from httpx import AsyncClient
 
-from virtual_labs.tests.utils import get_headers
+from virtual_labs.tests.utils import cleanup_resources, get_headers
 
 headers_for_test_user = get_headers()
 
@@ -63,10 +63,16 @@ async def multiple_mock_labs(
     )
     all_ids = list(ids)
     yield async_test_client, all_ids
-    await delete_lab(client=async_test_client, lab_id=all_ids[0][0])
-    await delete_lab(client=async_test_client, lab_id=all_ids[1][0])
-    await delete_lab(client=async_test_client, lab_id=all_ids[2][0])
-    # TODO delete_project
+
+    await cleanup_resources(
+        client=async_test_client, lab_id=all_ids[0][0], project_id=all_ids[0][1]
+    )
+    await cleanup_resources(
+        client=async_test_client, lab_id=all_ids[1][0], project_id=all_ids[1][1]
+    )
+    await cleanup_resources(
+        client=async_test_client, lab_id=all_ids[2][0], project_id=all_ids[2][1]
+    )
 
 
 @pytest.mark.asyncio
