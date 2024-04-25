@@ -6,8 +6,10 @@ from uuid import uuid4
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, Response
+from sqlalchemy import delete
 
-from virtual_labs.tests.utils import get_headers
+from virtual_labs.infrastructure.db.models import Project, VirtualLab
+from virtual_labs.tests.utils import get_headers, session_context_factory
 
 
 @pytest_asyncio.fixture
@@ -23,14 +25,14 @@ async def mock_lab_create(
         "plan_id": 1,
     }
     headers = get_headers()
-    response = await client.post(
+    lab_delete_response = await client.post(
         "/virtual-labs",
         json=body,
         headers=headers,
     )
 
-    assert response.status_code == 200
-    lab_id = response.json()["data"]["virtual_lab"]["id"]
+    assert lab_delete_response.status_code == 200
+    lab_id = lab_delete_response.json()["data"]["virtual_lab"]["id"]
 
     project_body = {
         "name": f"Test Project {uuid4()}",
@@ -45,13 +47,52 @@ async def mock_lab_create(
 
     yield client, lab_id, project_id, headers
 
-    lab_id = response.json()["data"]["virtual_lab"]["id"]
+    lab_id = lab_delete_response.json()["data"]["virtual_lab"]["id"]
 
     try:
-        response = await client.delete(f"/virtual-labs/{lab_id}", headers=get_headers())
-        assert response.status_code == HTTPStatus.OK
+        project_delete_response = await client.delete(
+            f"/virtual-labs/{lab_id}/projects/{project_id}", headers=get_headers()
+        )
+        assert project_delete_response.status_code == HTTPStatus.OK
     except Exception:
-        assert response.status_code == HTTPStatus.NOT_FOUND
+        assert (
+            project_delete_response.status_code == HTTPStatus.BAD_REQUEST
+        )  # TODO: The response code for deleting already deleted lab and project should be the same.
+
+    try:
+        lab_delete_response = await client.delete(
+            f"/virtual-labs/{lab_id}", headers=get_headers()
+        )
+        assert lab_delete_response.status_code == HTTPStatus.OK
+    except Exception:
+        assert lab_delete_response.status_code == HTTPStatus.NOT_FOUND
+
+    async with session_context_factory() as session:
+        project_data = (
+            await session.execute(
+                statement=delete(Project)
+                .where(Project.id == project_id)
+                .returning(
+                    Project.admin_group_id,
+                    Project.member_group_id,
+                    Project.nexus_project_id,
+                )
+            )
+        ).one()
+        lab_data = (
+            await session.execute(
+                statement=delete(VirtualLab)
+                .where(VirtualLab.id == lab_id)
+                .returning(
+                    VirtualLab.admin_group_id,
+                    VirtualLab.member_group_id,
+                    VirtualLab.nexus_organization_id,
+                )
+            )
+        ).one()
+        await session.commit()
+        print(f"Project data {project_data}")
+        print(f"Lab data {lab_data}")
 
 
 @pytest.mark.asyncio
