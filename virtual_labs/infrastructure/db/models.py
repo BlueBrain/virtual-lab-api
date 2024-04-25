@@ -31,9 +31,7 @@ class VirtualLab(Base):
     admin_group_id = Column(String, nullable=False, unique=True)
     member_group_id = Column(String, nullable=False, unique=True)
 
-    nexus_organization_id = Column(
-        String(255), nullable=False, unique=True
-    )  # the string length may change in the future, when we know the structure of it
+    nexus_organization_id = Column(String, nullable=False, unique=True)
 
     name = Column(String(250), index=True)
     description = Column(Text)

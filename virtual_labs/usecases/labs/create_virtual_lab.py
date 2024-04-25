@@ -177,7 +177,7 @@ async def create_virtual_lab(
         lab_with_ids = repository.VirtualLabDbCreate(
             id=new_lab_id,
             owner_id=owner_id,
-            nexus_organization_id=UUID(nexus_org.label),
+            nexus_organization_id=nexus_org.self,
             admin_group_id=group_ids["admin_group_id"],
             member_group_id=group_ids["member_group_id"],
             **lab.model_dump(),

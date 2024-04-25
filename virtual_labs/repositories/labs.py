@@ -18,7 +18,7 @@ class VirtualLabDbCreate(labs.VirtualLabCreate):
     owner_id: UUID4
     admin_group_id: str
     member_group_id: str
-    nexus_organization_id: UUID4
+    nexus_organization_id: str
 
 
 def get_all_virtual_lab_for_user(db: Session) -> List[VirtualLab]:
