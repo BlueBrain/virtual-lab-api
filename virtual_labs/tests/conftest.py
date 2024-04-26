@@ -6,7 +6,7 @@ import pytest_asyncio
 from httpx import AsyncClient, Response
 
 from virtual_labs.api import app
-from virtual_labs.tests.utils import get_headers
+from virtual_labs.tests.utils import cleanup_resources, get_headers
 
 VL_COUNT = 2
 PROJECTS_PER_VL_COUNT = 2
@@ -55,8 +55,4 @@ async def mock_lab_create(
     yield response, headers
 
     lab_id = response.json()["data"]["virtual_lab"]["id"]
-    response = await client.delete(
-        f"/virtual-labs/{lab_id}",
-        headers=get_headers(),
-    )
-    assert response.status_code == 200
+    await cleanup_resources(client, lab_id)

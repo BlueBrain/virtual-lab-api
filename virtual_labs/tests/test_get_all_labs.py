@@ -65,11 +65,7 @@ async def multiple_mock_labs(
     yield async_test_client, all_ids
 
     await cleanup_resources(client=async_test_client, lab_id=all_ids[0][0])
-    await cleanup_resources(
-        client=async_test_client,
-        lab_id=all_ids[1][0],
-        project_ids=[all_ids[1][1]] if all_ids[1][1] is not None else [],
-    )
+    await cleanup_resources(client=async_test_client, lab_id=all_ids[1][0])
     await cleanup_resources(client=async_test_client, lab_id=all_ids[2][0])
 
 

@@ -58,7 +58,6 @@ async def mock_create_project_with_users(
         f"/virtual-labs/{virtual_lab_id}/projects",
         json=payload,
     )
-
     yield response
 
 

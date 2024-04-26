@@ -113,6 +113,4 @@ async def mock_create_vl_projects(
 
     for elt in vl_projects:
         for vl_id, projects in elt.items():
-            await cleanup_resources(
-                client, vl_id, project_ids=cast(list[str], projects)
-            )
+            await cleanup_resources(client, vl_id)

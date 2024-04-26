@@ -43,7 +43,7 @@ async def mock_lab_create(
     project_id = cast("str", project_response.json()["data"]["project"]["id"])
 
     yield client, lab_id, project_id, headers
-    await cleanup_resources(client=client, lab_id=lab_id, project_ids=[project_id])
+    await cleanup_resources(client=client, lab_id=lab_id)
 
 
 @pytest.mark.asyncio

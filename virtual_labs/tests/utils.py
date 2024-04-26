@@ -1,10 +1,11 @@
 from contextlib import asynccontextmanager
 from http import HTTPStatus
 from typing import AsyncGenerator, cast
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from httpx import AsyncClient, Response
-from sqlalchemy import delete
+from loguru import logger
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from virtual_labs.infrastructure.db.config import session_pool
@@ -72,14 +73,17 @@ def get_invite_token_from_email_body(email_body: str) -> str:
     return email_body.split("?token=")[2].split("</a>\n")[0]
 
 
-async def cleanup_resources(
-    client: AsyncClient, lab_id: str, project_ids: list[str] = []
-) -> None:
-    """Performs cleanup of following resources for lab_id and project_id (if not None):
+async def cleanup_resources(client: AsyncClient, lab_id: str) -> None:
+    """Performs cleanup of following resources for lab_id:
     1. Deprecates underlying nexus org/project by calling the DELETE endpoints
-    2. Deletes lab/project row from the DB
+    2. Deletes lab/project row along with lab_invite, project_invite, project_star rows from the DB
     3. Deletes admin and member groups from keycloak
     """
+    project_ids = []
+    async with session_context_factory() as session:
+        stmt = select(Project.id).filter(Project.virtual_lab_id == UUID(lab_id))
+        all = (await session.execute(statement=stmt)).scalars().all()
+        project_ids = [str(project_id) for project_id in all]
 
     # 1. Call DELETE endpoints (which will deprecate nexus resources)
     for project_id in project_ids:
@@ -87,7 +91,6 @@ async def cleanup_resources(
             project_delete_response = await client.delete(
                 f"/virtual-labs/{lab_id}/projects/{project_id}", headers=get_headers()
             )
-            assert project_delete_response.status_code == HTTPStatus.OK
         except Exception:
             assert (
                 project_delete_response.status_code == HTTPStatus.BAD_REQUEST
@@ -96,7 +99,6 @@ async def cleanup_resources(
         lab_delete_response = await client.delete(
             f"/virtual-labs/{lab_id}", headers=get_headers()
         )
-        assert lab_delete_response.status_code == HTTPStatus.OK
     except Exception:
         assert lab_delete_response.status_code == HTTPStatus.NOT_FOUND
 
@@ -112,18 +114,21 @@ async def cleanup_resources(
 
             await session.execute(
                 statement=delete(ProjectStar).where(
-                    ProjectInvite.project_id == project_id
+                    ProjectStar.project_id == project_id
                 )
             )
 
+            logger.debug(f"Deleting project {project_id}")
             project_data = (
                 await session.execute(
                     statement=delete(Project)
                     .where(Project.id == project_id)
                     .returning(Project.admin_group_id, Project.member_group_id)
                 )
-            ).one()
-            project_group_ids.append(project_data.tuple())
+            ).first()
+
+            if project_data is not None:
+                project_group_ids.append(project_data.tuple())
 
         await session.execute(
             statement=delete(VirtualLabInvite).where(
