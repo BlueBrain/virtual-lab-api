@@ -73,7 +73,7 @@ def get_invite_token_from_email_body(email_body: str) -> str:
 
 
 async def cleanup_resources(
-    client: AsyncClient, lab_id: str, project_id: str | None = None
+    client: AsyncClient, lab_id: str, project_ids: list[str] = []
 ) -> None:
     """Performs cleanup of following resources for lab_id and project_id (if not None):
     1. Deprecates underlying nexus org/project by calling the DELETE endpoints
@@ -82,7 +82,7 @@ async def cleanup_resources(
     """
 
     # 1. Call DELETE endpoints (which will deprecate nexus resources)
-    if project_id is not None:
+    for project_id in project_ids:
         try:
             project_delete_response = await client.delete(
                 f"/virtual-labs/{lab_id}/projects/{project_id}", headers=get_headers()
@@ -101,8 +101,9 @@ async def cleanup_resources(
         assert lab_delete_response.status_code == HTTPStatus.NOT_FOUND
 
     # 2. Delete database rows
+    project_group_ids: list[tuple[str, str]] = []
     async with session_context_factory() as session:
-        if project_id is not None:
+        for project_id in project_ids:
             await session.execute(
                 statement=delete(ProjectInvite).where(
                     ProjectInvite.project_id == project_id
@@ -122,6 +123,7 @@ async def cleanup_resources(
                     .returning(Project.admin_group_id, Project.member_group_id)
                 )
             ).one()
+            project_group_ids.append(project_data.tuple())
 
         await session.execute(
             statement=delete(VirtualLabInvite).where(
@@ -140,8 +142,8 @@ async def cleanup_resources(
 
     # 3. Delete KC groups
     group_repo = GroupMutationRepository()
-    if project_id is not None:
-        group_repo.delete_group(group_id=project_data[0])
-        group_repo.delete_group(group_id=project_data[1])
+    for project_group_id in project_group_ids:
+        group_repo.delete_group(group_id=project_group_id[0])
+        group_repo.delete_group(group_id=project_group_id[1])
     group_repo.delete_group(group_id=lab_data[0])
     group_repo.delete_group(group_id=lab_data[1])

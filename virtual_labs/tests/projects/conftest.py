@@ -3,14 +3,8 @@ from uuid import UUID, uuid4
 
 import pytest_asyncio
 from httpx import AsyncClient, Response
-from sqlalchemy import delete
 
-from virtual_labs.infrastructure.db.models import Project
-from virtual_labs.tests.utils import (
-    create_mock_lab,
-    get_headers,
-    session_context_factory,
-)
+from virtual_labs.tests.utils import cleanup_resources, create_mock_lab, get_headers
 
 VL_COUNT = 2
 PROJECTS_PER_VL_COUNT = 2
@@ -119,12 +113,6 @@ async def mock_create_vl_projects(
 
     for elt in vl_projects:
         for vl_id, projects in elt.items():
-            await client.delete(
-                f"/virtual-labs/{vl_id}",
+            await cleanup_resources(
+                client, vl_id, project_ids=cast(list[str], projects)
             )
-
-            async with session_context_factory() as session:
-                await session.execute(
-                    statement=delete(Project).where(Project.id.in_(projects))
-                )
-                await session.commit()
