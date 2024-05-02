@@ -72,7 +72,7 @@ async def create_mock_lab(
 
 async def create_mock_lab_with_project(
     client: AsyncClient, owner_username: str = "test"
-) -> tuple[str, str]:
+) -> tuple[dict[str, str], str]:
     body = {
         "name": f"Test Lab {uuid4()}",
         "description": "Test",
@@ -101,7 +101,7 @@ async def create_mock_lab_with_project(
     )
 
     project_id = project_response.json()["data"]["project"]["id"]
-    return (lab_id, project_id)
+    return (lab_response.json()["data"]["virtual_lab"], project_id)
 
 
 def get_invite_token_from_email_body(email_body: str) -> str:

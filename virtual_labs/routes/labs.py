@@ -16,11 +16,11 @@ from virtual_labs.domain.labs import (
     LabResponse,
     SearchLabResponse,
     VirtualLabCreate,
+    VirtualLabDetails,
     VirtualLabOut,
     VirtualLabUpdate,
     VirtualLabUser,
     VirtualLabUsers,
-    VirtualLabWithProject,
 )
 from virtual_labs.infrastructure.db.config import default_session_factory
 from virtual_labs.infrastructure.kc.auth import verify_jwt
@@ -29,7 +29,7 @@ from virtual_labs.shared.utils.auth import get_user_id_from_auth
 from virtual_labs.usecases import labs as usecases
 from virtual_labs.usecases.labs.check_virtual_lab_name_exists import LabExists
 
-PaginatedLabs = LabResponse[PaginatedResultsResponse[VirtualLabWithProject]]
+PaginatedLabs = LabResponse[PaginatedResultsResponse[VirtualLabDetails]]
 router = APIRouter(prefix="/virtual-labs", tags=["Virtual Labs Endpoints"])
 
 
@@ -115,9 +115,7 @@ async def get_virtual_lab_users(
     )
 
 
-@router.post(
-    "", response_model=LabResponse[CreateLabOut], response_model_exclude_none=True
-)
+@router.post("", response_model=LabResponse[CreateLabOut])
 async def create_virtual_lab(
     lab: VirtualLabCreate,
     session: AsyncSession = Depends(default_session_factory),

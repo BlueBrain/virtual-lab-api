@@ -1,5 +1,6 @@
 from http import HTTPStatus
 from json import loads
+from uuid import UUID
 
 from keycloak import KeycloakError  # type: ignore
 from loguru import logger
@@ -10,12 +11,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from virtual_labs.core.exceptions.api_error import VliError, VliErrorCode
 from virtual_labs.core.exceptions.identity_error import IdentityError
 from virtual_labs.core.types import UserRoleEnum
-from virtual_labs.domain.labs import LabResponse, VirtualLabUser
+from virtual_labs.domain.labs import LabResponse, UserWithInviteStatus, VirtualLabUser
 from virtual_labs.repositories import labs as lab_repository
 from virtual_labs.repositories.user_repo import (
     UserMutationRepository,
     UserQueryRepository,
 )
+from virtual_labs.shared.utils.is_user_in_lab import is_user_in_lab
 
 
 async def change_user_role_for_lab(
@@ -30,7 +32,15 @@ async def change_user_role_for_lab(
     try:
         lab = await lab_repository.get_undeleted_virtual_lab(db, lab_id)
         user = user_query_repo.retrieve_user_from_kc(str(user_id))
-
+        if not is_user_in_lab(UUID(user.id), lab):
+            logger.debug(
+                f"Cannot change role of user {user.id} because they dont belong in lab {lab.name}"
+            )
+            raise VliError(
+                message="Cannot change role of user that does not belong in lab",
+                error_code=VliErrorCode.ENTITY_NOT_FOUND,
+                http_status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+            )
         new_group_id = (
             lab.admin_group_id
             if new_role.value == UserRoleEnum.admin.value
@@ -41,7 +51,11 @@ async def change_user_role_for_lab(
             # User already has `new_role`. Nothing else to do
             return LabResponse[VirtualLabUser](
                 message="User already has this role",
-                data=VirtualLabUser(user=user),
+                data=VirtualLabUser(
+                    user=UserWithInviteStatus(
+                        **user.model_dump(), invite_accepted=True, role=new_role.value
+                    )
+                ),
             )
 
         old_group_id = (
@@ -56,9 +70,13 @@ async def change_user_role_for_lab(
         user_mutation_repo.attach_user_to_group(
             user_id=user_id, group_id=str(new_group_id)
         )
-
         return LabResponse[VirtualLabUser](
-            message="Successfully changed user role", data=VirtualLabUser(user=user)
+            message="Successfully changed user role",
+            data=VirtualLabUser(
+                user=UserWithInviteStatus(
+                    **user.model_dump(), invite_accepted=True, role=new_role.value
+                )
+            ),
         )
     except SQLAlchemyError as error:
         logger.error(

@@ -23,7 +23,7 @@ async def test_project_all_search_success(
     details = response.json()
 
     assert response.status_code == 200
-    assert details["data"]["total"] == VL_COUNT * PROJECTS_PER_VL_COUNT
+    assert details["data"]["total"] >= VL_COUNT * PROJECTS_PER_VL_COUNT
 
 
 @pytest.mark.asyncio

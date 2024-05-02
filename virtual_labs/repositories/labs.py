@@ -4,7 +4,7 @@ from pydantic import UUID4
 from sqlalchemy import func, select, update
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session, noload, subqueryload
+from sqlalchemy.orm import Session, noload
 from sqlalchemy.sql import and_, or_
 
 from virtual_labs.core.types import PaginatedDbResult
@@ -40,19 +40,13 @@ async def get_paginated_virtual_labs(
     count = await db.scalar(
         select(func.count()).select_from(count_query.options(noload("*")).subquery())
     )
-    paginated_query = (
-        select(VirtualLab)
-        .options(
-            subqueryload(VirtualLab.projects).subqueryload(Project.project_stars),
-        )
-        .where(
-            and_(
-                ~VirtualLab.deleted,
-                or_(
-                    (VirtualLab.admin_group_id.in_(group_ids)),
-                    (VirtualLab.member_group_id.in_(group_ids)),
-                ),
-            )
+    paginated_query = select(VirtualLab).where(
+        and_(
+            ~VirtualLab.deleted,
+            or_(
+                (VirtualLab.admin_group_id.in_(group_ids)),
+                (VirtualLab.member_group_id.in_(group_ids)),
+            ),
         )
     )
 

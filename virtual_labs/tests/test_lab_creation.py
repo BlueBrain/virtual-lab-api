@@ -68,7 +68,7 @@ async def mock_lab_create_with_users(
 
 
 def assert_users_in_lab(response: Response) -> None:
-    users = cast(list[dict[str, Any]], response.json()["data"]["virtual_lab"]["users"])
+    users = cast(list[dict[str, Any]], response.json()["data"]["users"])
     actual_users = [
         {
             "username": user.get("username"),
@@ -144,7 +144,11 @@ async def test_virtual_lab_created_with_users(
             "id": lab_id,
             "plan_id": 1,
             "entity": "EPFL, Switzerland",
+            "nexus_organization_id": f"http://delta:8080/v1/orgs/{lab_id}",
+            "deleted": False,
             "created_at": actual_response["virtual_lab"]["created_at"],
+            "deleted_at": None,
+            "updated_at": None,
         },
         "successful_invites": [
             {"email": "test-1@test.com", "role": "admin"},
@@ -155,5 +159,5 @@ async def test_virtual_lab_created_with_users(
 
     assert actual_response == expected_response
 
-    lab_response = await client.get(f"/virtual-labs/{lab_id}", headers=headers)
+    lab_response = await client.get(f"/virtual-labs/{lab_id}/users", headers=headers)
     assert_users_in_lab(lab_response)

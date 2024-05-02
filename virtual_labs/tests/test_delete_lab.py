@@ -62,17 +62,15 @@ async def test_delete_lab(
 async def test_deleting_labs_deletes_all_projects_only_in_that_lab(
     async_test_client: AsyncClient,
 ) -> None:
-    lab_to_delete_id, project_1_id = await create_mock_lab_with_project(
-        async_test_client
-    )
-    lab_to_keep_id, project_2_id = await create_mock_lab_with_project(async_test_client)
+    lab_to_delete, project_1_id = await create_mock_lab_with_project(async_test_client)
+    lab_to_keep, project_2_id = await create_mock_lab_with_project(async_test_client)
 
     user_projects = await async_test_client.get("/virtual-labs/projects")
     count_before_deleting = user_projects.json()["data"]["total"]
     assert count_before_deleting >= 2
 
     delete_response = await async_test_client.delete(
-        f"/virtual-labs/{lab_to_delete_id}", headers=get_headers()
+        f"/virtual-labs/{lab_to_delete["id"]}", headers=get_headers()
     )
     assert delete_response.status_code == HTTPStatus.OK
 

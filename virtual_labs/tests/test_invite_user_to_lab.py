@@ -48,7 +48,7 @@ def assert_invite_response(response: Response) -> None:
 def assert_right_users_in_lab(response: Response) -> None:
     assert response.status_code == 200
     lab_users_response_data = response.json()
-    lab_users = lab_users_response_data["data"]["virtual_lab"]["users"]
+    lab_users = lab_users_response_data["data"]["users"]
     assert len(lab_users) == 2
     for user in lab_users:
         if user["username"] == "test":
@@ -72,7 +72,9 @@ async def test_invite_user_to_lab(
     )
     assert_invite_response(invite_response)
 
-    lab_users_response = await client.get(f"/virtual-labs/{lab_id}", headers=headers)
+    lab_users_response = await client.get(
+        f"/virtual-labs/{lab_id}/users", headers=headers
+    )
     assert_right_users_in_lab(lab_users_response)
 
 
