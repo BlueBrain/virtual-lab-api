@@ -13,10 +13,10 @@ from virtual_labs.domain.invite import AddUser
 from virtual_labs.domain.labs import (
     CreateLabOut,
     InviteSent,
-    LabByIdOut,
     LabResponse,
     SearchLabResponse,
     VirtualLabCreate,
+    VirtualLabOut,
     VirtualLabUpdate,
     VirtualLabUser,
     VirtualLabUsers,
@@ -84,7 +84,7 @@ async def search_virtual_lab_by_name(
 
 @router.get(
     "/{virtual_lab_id}",
-    response_model=LabResponse[LabByIdOut],
+    response_model=LabResponse[VirtualLabOut],
     summary="Get non deleted virtual lab by id",
 )
 @verify_vlab_read
@@ -92,11 +92,11 @@ async def get_virtual_lab(
     virtual_lab_id: UUID4,
     session: AsyncSession = Depends(default_session_factory),
     auth: tuple[AuthUser, str] = Depends(verify_jwt),
-) -> LabResponse[LabByIdOut]:
+) -> LabResponse[VirtualLabOut]:
     lab_response = await usecases.get_virtual_lab(
         session, virtual_lab_id, user_id=get_user_id_from_auth(auth)
     )
-    return LabResponse[LabByIdOut](
+    return LabResponse[VirtualLabOut](
         message="Virtual lab resource for id {}".format(virtual_lab_id),
         data=lab_response,
     )
@@ -127,18 +127,18 @@ async def create_virtual_lab(
     return LabResponse[CreateLabOut](message="Newly created virtual lab", data=result)
 
 
-@router.patch("/{virtual_lab_id}", response_model=LabResponse[LabByIdOut])
+@router.patch("/{virtual_lab_id}", response_model=LabResponse[VirtualLabOut])
 @verify_vlab_write
 async def update_virtual_lab(
     virtual_lab_id: UUID4,
     lab: VirtualLabUpdate,
     session: AsyncSession = Depends(default_session_factory),
     auth: tuple[AuthUser, str] = Depends(verify_jwt),
-) -> LabResponse[LabByIdOut]:
+) -> LabResponse[VirtualLabOut]:
     udpated_lab = await usecases.update_virtual_lab(
         session, virtual_lab_id, lab=lab, user_id=get_user_id_from_auth(auth)
     )
-    return LabResponse[LabByIdOut](message="Updated virtual lab", data=udpated_lab)
+    return LabResponse[VirtualLabOut](message="Updated virtual lab", data=udpated_lab)
 
 
 @router.post(
@@ -199,12 +199,12 @@ async def remove_user_from_virtual_lab(
     return LabResponse[None](message="User removed from virtual lab", data=None)
 
 
-@router.delete("/{virtual_lab_id}", response_model=LabResponse[LabByIdOut])
+@router.delete("/{virtual_lab_id}", response_model=LabResponse[VirtualLabOut])
 @verify_vlab_write
 async def delete_virtual_lab(
     virtual_lab_id: UUID4,
     session: AsyncSession = Depends(default_session_factory),
     auth: tuple[AuthUser, str] = Depends(verify_jwt),
-) -> LabResponse[LabByIdOut]:
+) -> LabResponse[VirtualLabOut]:
     deleted_lab = await usecases.delete_virtual_lab(session, virtual_lab_id, auth=auth)
-    return LabResponse[LabByIdOut](message="Deleted virtual lab", data=deleted_lab)
+    return LabResponse[VirtualLabOut](message="Deleted virtual lab", data=deleted_lab)

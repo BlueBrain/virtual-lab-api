@@ -121,6 +121,24 @@ class VirtualLabWithUsers(VirtualLabDomainVerbose):
     users: list[UserWithInviteStatus]
 
 
+class VirtualLabDetails(VirtualLabBase):
+    id: UUID4
+    plan_id: int
+    created_at: datetime
+    nexus_organization_id: str
+    deleted: bool
+
+    updated_at: Optional[datetime] = None
+    deleted_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class VirtualLabOut(BaseModel):
+    virtual_lab: VirtualLabDetails
+
+
 class LabByIdOut(BaseModel):
     virtual_lab: VirtualLabWithUsers
 
@@ -143,6 +161,6 @@ class VirtualLabCreate(VirtualLabBase):
 
 
 class CreateLabOut(BaseModel):
-    virtual_lab: VirtualLabDomain
+    virtual_lab: VirtualLabDetails
     successful_invites: list[AddUser]
     failed_invites: list[AddUser]

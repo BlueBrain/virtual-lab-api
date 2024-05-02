@@ -79,13 +79,7 @@ async def get_paginated_virtual_labs(
 
 async def get_undeleted_virtual_lab(db: AsyncSession, lab_id: UUID4) -> VirtualLab:
     """Returns non-deleted virtual lab by id. Raises an exception if the lab by id is not found or if it is deleted."""
-    query = (
-        select(VirtualLab)
-        .options(
-            subqueryload(VirtualLab.projects).subqueryload(Project.project_stars),
-        )
-        .where(VirtualLab.id == lab_id, ~VirtualLab.deleted)
-    )
+    query = select(VirtualLab).where(VirtualLab.id == lab_id, ~VirtualLab.deleted)
     return (await db.execute(statement=query)).unique().scalar_one()
 
 

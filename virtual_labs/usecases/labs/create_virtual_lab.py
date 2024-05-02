@@ -194,14 +194,14 @@ async def create_virtual_lab(
         db_lab = await repository.create_virtual_lab(db, lab_with_ids)
         if lab.include_members is None or len(lab.include_members) == 0:
             return domain.CreateLabOut(
-                virtual_lab=domain.VirtualLabDomain.model_validate(db_lab),
+                virtual_lab=domain.VirtualLabDetails.model_validate(db_lab),
                 successful_invites=[],
                 failed_invites=[],
             )
         # 4. Invite users
         invites = await invite_members_to_lab(db, lab.include_members, db_lab, owner_id)
         return domain.CreateLabOut(
-            virtual_lab=domain.VirtualLabDomain.model_validate(db_lab),
+            virtual_lab=domain.VirtualLabDetails.model_validate(db_lab),
             successful_invites=invites["successful_invites"],
             failed_invites=invites["failed_invites"],
         )
