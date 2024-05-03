@@ -217,7 +217,7 @@ async def retrieve_projects(
     "/{virtual_lab_id}/projects/{project_id}",
     operation_id="update_project_data",
     summary="Update project data",
-    response_model=VliAppResponse[ProjectOut],
+    response_model=VliAppResponse[ProjectVlOut],
 )
 @verify_vlab_or_project_write
 async def update_project_data(
@@ -390,6 +390,7 @@ async def retrieve_project_users(
     response_model=VliAppResponse[ProjectUsersCountOut],
 )
 async def retrieve_project_users_count(
+    virtual_lab_id: UUID4,
     project_id: UUID4,
     session: AsyncSession = Depends(default_session_factory),
     _: Tuple[AuthUser, str] = Depends(verify_jwt),

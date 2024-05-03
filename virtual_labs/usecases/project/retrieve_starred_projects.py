@@ -13,6 +13,7 @@ from virtual_labs.domain.project import Project
 from virtual_labs.infrastructure.kc.models import AuthUser
 from virtual_labs.repositories.project_repo import ProjectQueryRepository
 from virtual_labs.shared.utils.auth import get_user_id_from_auth
+from virtual_labs.shared.utils.get_one_project_admin import get_one_project_admin
 
 
 async def retrieve_starred_projects_use_case(
@@ -31,6 +32,8 @@ async def retrieve_starred_projects_use_case(
             {
                 **Project(**project.__dict__).model_dump(),
                 "starred_at": star_p.created_at,
+                "virtual_lab_id": project.virtual_lab_id,
+                "admin": get_one_project_admin(project),
             }
             for star_p, project in results.rows
         ]

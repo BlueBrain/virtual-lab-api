@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import UUID4, BaseModel, EmailStr
+from pydantic import UUID4, BaseModel, EmailStr, Field
 
 from virtual_labs.core.types import UserRoleEnum
 from virtual_labs.domain.invite import AddUser
@@ -40,8 +40,10 @@ class Project(BaseModel):
 
 
 class ProjectVlOut(Project):
-    virtual_lab: VirtualLabModel
-    owner: ShortenedUser
+    virtual_lab_id: UUID4
+    admin: ShortenedUser = Field(
+        description="Alphabetically first admin of the project"
+    )
 
 
 class ProjectExistenceOut(BaseModel):
@@ -61,8 +63,7 @@ class FailedInvite(BaseModel):
 
 
 class ProjectOut(BaseModel):
-    project: Project
-    virtual_lab_id: UUID4
+    project: ProjectVlOut
     failed_invites: List[FailedInvite]
 
 
@@ -86,9 +87,9 @@ class ProjectCountOut(BaseModel):
     count: int
 
 
-class ProjectWithStarredDateOut(Project):
+class ProjectWithStarredDateOut(ProjectVlOut):
     updated_at: datetime
-    starred: bool
+    starred_at: bool
 
 
 class ProjectUpdateBudgetOut(BaseModel):

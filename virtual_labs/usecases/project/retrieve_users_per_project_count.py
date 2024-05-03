@@ -26,7 +26,10 @@ async def retrieve_users_per_project_count_use_case(
 
         users = uniq_list([u.id for u in admins + members])
 
-    except SQLAlchemyError:
+    except SQLAlchemyError as ex:
+        logger.error(
+            f"DB error during retrieving users per project count: {project_id} ({ex})"
+        )
         raise VliError(
             error_code=VliErrorCode.DATABASE_ERROR,
             http_status_code=status.BAD_REQUEST,

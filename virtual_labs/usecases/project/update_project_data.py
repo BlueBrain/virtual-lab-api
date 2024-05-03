@@ -11,11 +11,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from virtual_labs.core.exceptions.api_error import VliError, VliErrorCode
 from virtual_labs.core.exceptions.nexus_error import NexusError
 from virtual_labs.core.response.api_response import VliResponse
-from virtual_labs.domain.project import Project, ProjectBody
+from virtual_labs.domain.project import ProjectBody, ProjectVlOut
 from virtual_labs.external.nexus.project_interface import NexusProjectInterface
 from virtual_labs.infrastructure.kc.auth import get_client_token
 from virtual_labs.infrastructure.kc.models import AuthUser
 from virtual_labs.repositories.project_repo import ProjectMutationRepository
+from virtual_labs.shared.utils.get_one_project_admin import get_one_project_admin
 
 
 async def update_project_data(
@@ -26,7 +27,7 @@ async def update_project_data(
     project_id: UUID4,
     payload: ProjectBody,
     auth: Tuple[AuthUser, str],
-) -> Response | VliError:
+) -> Response:
     pmr = ProjectMutationRepository(session)
     nexus = NexusProjectInterface(
         httpx_clt=httpx_client, client_token=get_client_token()
@@ -42,7 +43,8 @@ async def update_project_data(
             project_id=project_id,
             payload=payload,
         )
-    except SQLAlchemyError:
+    except SQLAlchemyError as ex:
+        logger.exception(f"Updating project failed because of error {ex}")
         raise VliError(
             error_code=VliErrorCode.DATABASE_ERROR,
             http_status_code=status.BAD_REQUEST,
@@ -68,7 +70,8 @@ async def update_project_data(
         return VliResponse.new(
             message="Project data updated successfully",
             data={
-                "project": Project(**project.__dict__),
-                "virtual_lab_id": virtual_lab_id,
+                "project": ProjectVlOut(
+                    **project.__dict__, admin=get_one_project_admin(project)
+                ),
             },
         )

@@ -10,13 +10,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from virtual_labs.core.exceptions.api_error import VliError, VliErrorCode
 from virtual_labs.core.response.api_response import VliResponse
 from virtual_labs.domain.common import PageParams
-from virtual_labs.domain.project import Project, VirtualLabModel
-from virtual_labs.domain.user import ShortenedUser
+from virtual_labs.domain.project import ProjectVlOut
 from virtual_labs.infrastructure.kc.models import AuthUser
 from virtual_labs.repositories.group_repo import GroupQueryRepository
 from virtual_labs.repositories.project_repo import ProjectQueryRepository
-from virtual_labs.repositories.user_repo import UserQueryRepository
 from virtual_labs.shared.utils.auth import get_user_id_from_auth
+from virtual_labs.shared.utils.get_one_project_admin import get_one_project_admin
 
 
 async def retrieve_all_user_projects_per_vl_use_case(
@@ -28,7 +27,6 @@ async def retrieve_all_user_projects_per_vl_use_case(
 ) -> Response | VliError:
     pr = ProjectQueryRepository(session)
     gqr = GroupQueryRepository()
-    uqr = UserQueryRepository()
     user_id = get_user_id_from_auth(auth)
 
     try:
@@ -43,11 +41,9 @@ async def retrieve_all_user_projects_per_vl_use_case(
 
         projects = [
             {
-                **Project(**p.__dict__).model_dump(),
-                "virtual_lab": VirtualLabModel(**v.__dict__),
-                "owner": ShortenedUser(
-                    **uqr.retrieve_user_from_kc(user_id=str(p.owner_id)).__dict__
-                ),
+                **ProjectVlOut(
+                    **p.__dict__, admin=get_one_project_admin(p)
+                ).model_dump(),
             }
             for p, v in results.rows
         ]

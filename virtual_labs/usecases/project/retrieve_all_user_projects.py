@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from virtual_labs.core.exceptions.api_error import VliError, VliErrorCode
 from virtual_labs.core.response.api_response import VliResponse
 from virtual_labs.domain.common import PageParams
-from virtual_labs.domain.project import Project, VirtualLabModel
+from virtual_labs.domain.project import Project
 from virtual_labs.domain.user import ShortenedUser
 from virtual_labs.infrastructure.kc.models import AuthUser
 from virtual_labs.repositories.group_repo import GroupQueryRepository
@@ -39,8 +39,8 @@ async def retrieve_all_user_projects_use_case(
         projects = [
             {
                 **Project(**p.__dict__).model_dump(),
-                "virtual_lab": VirtualLabModel(**v.__dict__),
-                "owner": ShortenedUser(
+                "virtual_lab_id": v.id,
+                "admin": ShortenedUser(
                     **uqr.retrieve_user_from_kc(user_id=str(p.owner_id)).__dict__
                 ),
             }

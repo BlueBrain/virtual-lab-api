@@ -16,7 +16,7 @@ from virtual_labs.core.exceptions.nexus_error import NexusError
 from virtual_labs.core.response.api_response import VliResponse
 from virtual_labs.core.types import UserRoleEnum
 from virtual_labs.domain.invite import AddUser
-from virtual_labs.domain.project import FailedInvite, Project, ProjectCreationBody
+from virtual_labs.domain.project import FailedInvite, ProjectCreationBody, ProjectVlOut
 from virtual_labs.external.nexus.project_instance import instantiate_nexus_project
 from virtual_labs.infrastructure.db.models import Project as DbProject
 from virtual_labs.infrastructure.db.models import VirtualLab
@@ -34,6 +34,7 @@ from virtual_labs.repositories.user_repo import (
     UserQueryRepository,
 )
 from virtual_labs.shared.utils.auth import get_user_id_from_auth
+from virtual_labs.shared.utils.get_one_project_admin import get_one_project_admin
 
 
 async def invite_project_members(
@@ -202,7 +203,7 @@ async def create_new_project_use_case(
 
         raise VliError(
             error_code=VliErrorCode.EXTERNAL_SERVICE_ERROR,
-            http_status_code=status.BAD_REQUEST,
+            http_status_code=status.BAD_GATEWAY,
             message="Nexus Project creation failed",
             details=ex.type,
         )
@@ -249,7 +250,9 @@ async def create_new_project_use_case(
         return VliResponse.new(
             message="Project created successfully",
             data={
-                "project": Project(**project.__dict__),
+                "project": ProjectVlOut(
+                    **project.__dict__, admin=get_one_project_admin(project)
+                ),
                 "virtual_lab_id": virtual_lab_id,
                 "failed_invites": failed_invites,
             },

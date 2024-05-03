@@ -423,7 +423,7 @@ class ProjectMutationRepository:
         virtual_lab_id: UUID4,
         project_id: UUID4,
         payload: ProjectBody,
-    ) -> Project | None:
+    ) -> Project:
         stmt = (
             update(Project)
             .where(
@@ -442,4 +442,4 @@ class ProjectMutationRepository:
         )
         await self.session.execute(statement=stmt)
         await self.session.commit()
-        return await self.session.get(Project, project_id)
+        return await self.session.get_one(Project, project_id)

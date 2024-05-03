@@ -9,11 +9,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from virtual_labs.core.exceptions.api_error import VliError, VliErrorCode
 from virtual_labs.core.response.api_response import VliResponse
-from virtual_labs.domain.project import Project, ProjectVlOut, VirtualLabModel
-from virtual_labs.domain.user import ShortenedUser
+from virtual_labs.domain.project import Project, ProjectVlOut
 from virtual_labs.infrastructure.kc.models import AuthUser
 from virtual_labs.repositories.project_repo import ProjectQueryRepository
-from virtual_labs.repositories.user_repo import UserQueryRepository
+from virtual_labs.shared.utils.get_one_project_admin import get_one_project_admin
 
 
 async def retrieve_single_project_use_case(
@@ -21,18 +20,16 @@ async def retrieve_single_project_use_case(
     virtual_lab_id: UUID4,
     project_id: UUID4,
     auth: Optional[Tuple[AuthUser, str]],
-) -> Response | VliError:
+) -> Response:
     pr = ProjectQueryRepository(session)
-    uqr = UserQueryRepository()
     try:
-        project, vl = await pr.retrieve_one_project_strict(virtual_lab_id, project_id)
-        owner = uqr.retrieve_user_from_kc(user_id=str(project.owner_id))
+        project, _ = await pr.retrieve_one_project_strict(virtual_lab_id, project_id)
 
         _project = ProjectVlOut(
             **{
-                **Project(**project.__dict__).model_dump(),
-                "virtual_lab": VirtualLabModel(**vl.__dict__),
-                "owner": ShortenedUser(**owner.__dict__),
+                **Project.model_validate(project).model_dump(),
+                "virtual_lab_id": project.virtual_lab_id,
+                "admin": get_one_project_admin(project),
             }
         )
 
