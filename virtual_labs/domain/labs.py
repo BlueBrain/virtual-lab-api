@@ -59,23 +59,23 @@ class PlanDomain(BaseModel):
         from_attributes = True
 
 
+class UserWithInviteStatus(ShortenedUser):
+    invite_accepted: bool
+    role: str
+
+
 class VirtualLabDetails(VirtualLabBase):
     id: UUID4
     plan_id: int
     created_at: datetime
     nexus_organization_id: str
-    deleted: bool
 
     updated_at: datetime | None = None
-    deleted_at: datetime | None = None
+
+    admin: UserWithInviteStatus
 
     class Config:
         from_attributes = True
-
-
-class UserWithInviteStatus(ShortenedUser):
-    invite_accepted: bool
-    role: str
 
 
 class VirtualLabUsers(BaseModel):

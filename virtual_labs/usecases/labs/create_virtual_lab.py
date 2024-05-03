@@ -24,6 +24,7 @@ from virtual_labs.repositories.user_repo import (
     UserQueryRepository,
 )
 from virtual_labs.shared.utils.auth import get_user_id_from_auth
+from virtual_labs.shared.utils.db_lab_to_domain_lab import db_lab_to_domain_lab
 from virtual_labs.usecases.labs.invite_user_to_lab import send_email_to_user_or_rollback
 from virtual_labs.usecases.plans.verify_plan import verify_plan
 
@@ -194,14 +195,14 @@ async def create_virtual_lab(
         db_lab = await repository.create_virtual_lab(db, lab_with_ids)
         if lab.include_members is None or len(lab.include_members) == 0:
             return domain.CreateLabOut(
-                virtual_lab=domain.VirtualLabDetails.model_validate(db_lab),
+                virtual_lab=db_lab_to_domain_lab(db_lab),
                 successful_invites=[],
                 failed_invites=[],
             )
         # 4. Invite users
         invites = await invite_members_to_lab(db, lab.include_members, db_lab, owner_id)
         return domain.CreateLabOut(
-            virtual_lab=domain.VirtualLabDetails.model_validate(db_lab),
+            virtual_lab=db_lab_to_domain_lab(db_lab),
             successful_invites=invites["successful_invites"],
             failed_invites=invites["failed_invites"],
         )

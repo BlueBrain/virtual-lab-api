@@ -145,10 +145,9 @@ async def test_virtual_lab_created_with_users(
             "plan_id": 1,
             "entity": "EPFL, Switzerland",
             "nexus_organization_id": f"http://delta:8080/v1/orgs/{lab_id}",
-            "deleted": False,
             "created_at": actual_response["virtual_lab"]["created_at"],
-            "deleted_at": None,
             "updated_at": None,
+            "admin": actual_response["virtual_lab"]["admin"],
         },
         "successful_invites": [
             {"email": "test-1@test.com", "role": "admin"},

@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from virtual_labs.core.exceptions.api_error import VliError, VliErrorCode
 from virtual_labs.domain import labs as domain
 from virtual_labs.repositories import labs as repository
+from virtual_labs.shared.utils.db_lab_to_domain_lab import db_lab_to_domain_lab
 from virtual_labs.usecases.plans.verify_plan import verify_plan
 
 
@@ -18,9 +19,7 @@ async def update_virtual_lab(
         if lab.plan_id is not None:
             await verify_plan(db, lab.plan_id)
         db_lab = await repository.update_virtual_lab(db, lab_id, lab)
-        return domain.VirtualLabOut(
-            virtual_lab=domain.VirtualLabDetails.model_validate(db_lab)
-        )
+        return domain.VirtualLabOut(virtual_lab=db_lab_to_domain_lab(db_lab))
     except IntegrityError as error:
         logger.error(
             "Virtual lab {} update could not be processed because it violates db constraints {}".format(

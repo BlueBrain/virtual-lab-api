@@ -1,4 +1,3 @@
-from datetime import datetime
 from http import HTTPStatus
 
 from loguru import logger
@@ -7,13 +6,14 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from virtual_labs.core.exceptions.api_error import VliError, VliErrorCode
-from virtual_labs.domain.labs import VirtualLabDetails, VirtualLabOut
+from virtual_labs.domain.labs import VirtualLabOut
 from virtual_labs.external.nexus.deprecate_organization import (
     deprecate_nexus_organization,
 )
 from virtual_labs.infrastructure.kc.models import AuthUser
 from virtual_labs.repositories import labs as repository
 from virtual_labs.shared.utils.auth import get_user_id_from_auth
+from virtual_labs.shared.utils.db_lab_to_domain_lab import db_lab_to_domain_lab
 
 
 class ProjectWithIds(BaseModel):
@@ -33,7 +33,7 @@ async def delete_virtual_lab(
         db_lab = await repository.get_virtual_lab_async(db, lab_id)
         user_id = get_user_id_from_auth(auth)
 
-        response = VirtualLabOut(virtual_lab=VirtualLabDetails.model_validate(db_lab))
+        response = VirtualLabOut(virtual_lab=db_lab_to_domain_lab(db_lab))
         if db_lab.deleted is True:
             return response
 
@@ -41,9 +41,6 @@ async def delete_virtual_lab(
         logger.debug(f"Deprecated nexus organization {nexus_org.label}")
 
         await repository.delete_virtual_lab(db, lab_id, user_id)
-
-        response.virtual_lab.deleted = True
-        response.virtual_lab.deleted_at = datetime.now()
         return response
     except SQLAlchemyError:
         raise VliError(

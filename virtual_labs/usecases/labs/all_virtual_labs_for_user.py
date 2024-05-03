@@ -9,6 +9,7 @@ from virtual_labs.domain.common import PageParams, PaginatedResultsResponse
 from virtual_labs.domain.labs import VirtualLabDetails
 from virtual_labs.repositories import labs as repository
 from virtual_labs.repositories.user_repo import UserQueryRepository
+from virtual_labs.shared.utils.db_lab_to_domain_lab import db_lab_to_domain_lab
 
 
 async def paginated_labs_for_user(
@@ -20,7 +21,7 @@ async def paginated_labs_for_user(
         paginated_results = await repository.get_paginated_virtual_labs(
             db, page_params, group_ids=group_ids
         )
-        labs = [VirtualLabDetails.model_validate(lab) for lab in paginated_results.rows]
+        labs = [db_lab_to_domain_lab(lab) for lab in paginated_results.rows]
         return PaginatedResultsResponse(
             total=paginated_results.count,
             page=page_params.page,

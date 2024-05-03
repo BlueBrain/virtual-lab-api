@@ -67,9 +67,8 @@ async def test_get_lab_by_id(
         "plan_id": lab["plan_id"],
         "created_at": lab["created_at"],
         "nexus_organization_id": lab["nexus_organization_id"],
+        "admin": lab["admin"],
         "updated_at": None,
-        "deleted_at": None,
-        "deleted": False,
     }
     actual_response = response.json()["data"]["virtual_lab"]
     assert actual_response == expected_response
@@ -82,18 +81,10 @@ def assert_get_and_delete_body_are_same(
     delete_body = copy.deepcopy(
         cast(dict[str, Any], delete_response.json()["data"]["virtual_lab"])
     )
-    assert delete_body["deleted"] is True
-    assert delete_body["deleted_at"] is not None
-    del delete_body["deleted"]
-    del delete_body["deleted_at"]
 
     get_body = copy.deepcopy(
         cast(dict[str, Any], get_response.json()["data"]["virtual_lab"])
     )
-    assert get_body["deleted"] is False
-    assert get_body["deleted_at"] is None
-    del get_body["deleted"]
-    del get_body["deleted_at"]
 
     assert delete_body == get_body
 
