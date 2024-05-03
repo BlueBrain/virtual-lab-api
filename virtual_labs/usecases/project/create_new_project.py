@@ -139,7 +139,7 @@ async def create_new_project_use_case(
         raise VliError(
             error_code=VliErrorCode.ENTITY_ALREADY_EXISTS,
             http_status_code=status.BAD_REQUEST,
-            message="Virtual lab not found or Another project with the same name already exists",
+            message="Another project with the same name already exists",
         )
 
     try:

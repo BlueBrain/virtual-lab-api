@@ -43,7 +43,7 @@ def verify_vlab_write(f: Callable[..., Any]) -> Callable[..., Any]:
             raise VliError(
                 error_code=VliErrorCode.DATABASE_ERROR,
                 http_status_code=status.NOT_FOUND,
-                message="No VL with this id found",
+                message="No virtual lab with this id found",
             )
         except UserNotInList:
             raise VliError(
