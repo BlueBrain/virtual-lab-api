@@ -12,6 +12,7 @@ class BookmarkCategory(Enum):
     ExperimentalNeuronMorphology = "ExperimentalNeuronMorphology"
     SimulationCampaigns = "SimulationCampaign"
     CircuitEModel = "CircuitEModel"
+    CircuitMEModel = "CircuitMEModel"
 
 
 class BookmarkIn(BaseModel):
