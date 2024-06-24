@@ -124,7 +124,7 @@ def root() -> str:
 
 
 # TODO: add a proper health check logic, see https://pypi.org/project/fastapi-health/.
-@base_router.get("/healthz")
+@base_router.get("/health")
 def health() -> str:
     return "OK"
 
