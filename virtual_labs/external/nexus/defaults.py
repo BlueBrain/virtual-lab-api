@@ -7,7 +7,23 @@ AGGREGATE_SPARQL_VIEW = ["View", "AggregateSparqlView"]
 AGGREGATE_ELASTIC_SEARCH_VIEW = ["View", "AggregateElasticSearchView"]
 ELASTIC_SEARCH_VIEW = ["View", "ElasticSearchView"]
 CROSS_RESOLVER: List[str] = ["Resolver", "CrossProject"]
-PROJECTS_TO_AGGREGATE = ["bbp/atlas"]
+PROJECTS_TO_AGGREGATE = [
+    "bbp/atlas",
+    # Projects in SBO suite
+    "bbp/mouselight",
+    "public/thalamus",
+    "public/ngv",
+    "public/multi-vesicular-release",
+    "public/hippocampus",
+    "public/topological-sampling",
+    "bbp/lnmce",
+    "public/ngv-anatomy",
+    "bbp-external/seu",
+    "public/forge",
+    "public/sscx",
+    "neurosciencegraph/datamodels",
+    "bbp/mmb-point-neuron-framework-model",
+]
 ES_RESOURCE_TYPE: List[str] = [
     "http://www.w3.org/ns/prov#Entity",
     "http://schema.org/Dataset",
