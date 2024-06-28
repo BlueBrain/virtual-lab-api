@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, cast
+from typing import Any, AsyncGenerator, cast
 from uuid import UUID, uuid4
 
 import pytest_asyncio
@@ -139,3 +139,30 @@ async def mock_create_vl_projects(
     for elt in vl_projects:
         for vl_id, projects in elt.items():
             await cleanup_resources(client, vl_id)
+
+
+@pytest_asyncio.fixture
+async def mock_create_full_vl_projects(
+    async_test_client: AsyncClient,
+) -> AsyncGenerator[tuple[list[dict[str, Any]], dict[str, str]], None]:
+    client = async_test_client
+    headers = get_headers()
+
+    virtual_lab_resp = await create_mock_lab(async_test_client)
+    virtual_lab_id = virtual_lab_resp.json()["data"]["virtual_lab"]["id"]
+    projects: list[dict[str, Any]] = []
+
+    for i in range(PROJECTS_PER_VL_COUNT):
+        payload = {
+            "name": f"existed project {i}",
+            "description": f"existed project description {i}",
+        }
+        response = await client.post(
+            f"/virtual-labs/{virtual_lab_id}/projects",
+            json=payload,
+        )
+        projects.append(response.json()["data"]["project"])
+
+    yield projects, headers
+
+    await cleanup_resources(client, virtual_lab_id)
