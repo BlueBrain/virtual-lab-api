@@ -1,3 +1,5 @@
+import time
+import typing
 from contextlib import asynccontextmanager
 from http import HTTPStatus
 from typing import AsyncGenerator, cast
@@ -243,3 +245,18 @@ async def create_confirmed_setup_intent(customer_id: str) -> SetupIntent:
     )
 
     return intent
+
+
+def wait_until(
+    somepredicate: typing.Any,
+    timeout: int,
+    period: float = 0.25,
+    *args: typing.Any,
+    **kwargs: typing.Any,
+) -> bool:
+    mustend = time.time() + timeout
+    while time.time() < mustend:
+        if somepredicate(*args, **kwargs):
+            return True
+        time.sleep(period)
+    return False

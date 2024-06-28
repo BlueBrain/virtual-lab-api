@@ -6,9 +6,10 @@ import pytest_asyncio
 from httpx import AsyncClient, Response
 from requests import get
 
+from virtual_labs.external.nexus.defaults import AGGREGATE_ELASTIC_SEARCH_VIEW
 from virtual_labs.infrastructure.settings import settings
 from virtual_labs.repositories.group_repo import GroupQueryRepository
-from virtual_labs.tests.utils import get_client_headers
+from virtual_labs.tests.utils import get_client_headers, wait_until
 
 
 @pytest.mark.asyncio
@@ -121,3 +122,30 @@ async def test_vlm_project_with_members_creation(
     assert response.status_code == 200
     failed_invites = response.json()["data"]["failed_invites"]
     assert failed_invites == []
+
+
+@pytest.mark.asyncio
+async def test_aggregate_views_created_on_project_creation(
+    mock_create_project: tuple[Response, dict[str, str], dict[str, str]],
+) -> None:
+    (response, headers, payload) = mock_create_project
+
+    project_id = response.json()["data"]["project"]["id"]
+    virtual_lab_id = response.json()["data"]["project"]["virtual_lab_id"]
+
+    def views_created() -> bool:
+        nexus_views = get(
+            f"{settings.NEXUS_DELTA_URI}/views/{virtual_lab_id}/{str(project_id)}",
+            headers=get_client_headers(),
+        )
+        data = nexus_views.json()
+        agg_view = [
+            view
+            for view in data.get("_results")
+            if sorted(view.get("@type")) == sorted(AGGREGATE_ELASTIC_SEARCH_VIEW)
+        ]
+        return len(agg_view) == 1
+
+    # Nexus takes some time to return the created views that's why wait until is needed here
+    aggregate_view_created = wait_until(views_created, 5, 0.25)
+    assert aggregate_view_created is True

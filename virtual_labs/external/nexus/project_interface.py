@@ -30,6 +30,8 @@ from virtual_labs.external.nexus.models import (
     NexusProject,
     NexusResource,
     NexusResultAcl,
+    NexusSuiteProjects,
+    ProjectView,
 )
 from virtual_labs.infrastructure.settings import settings
 
@@ -281,6 +283,32 @@ class NexusProjectInterface:
                 type=NexusErrorValue.CREATE_ES_VIEW_ERROR,
             )
 
+    async def __get_sbo_suite_views(self) -> list[ProjectView]:
+        try:
+            sbo_projects_response = await self.httpx_clt.get(
+                f"{settings.NEXUS_DELTA_URI}/search/suites/sbo", headers=self.headers
+            )
+            sbo_projects_response.raise_for_status()
+
+            data = NexusSuiteProjects.model_validate(
+                sbo_projects_response.json()
+            ).projects
+            sbo_projects = data if isinstance(data, list) else [data]
+
+            views = [
+                ProjectView(project=project, viewId=ES_VIEW_ID)
+                for project in sbo_projects
+            ]
+            return views
+        except Exception as ex:
+            logger.error(
+                f"Failed to retrieve projects within sbo suite. Response {sbo_projects_response.json()}. Error: {ex}"
+            )
+            raise NexusError(
+                message="Failed to retrieve projects within sbo suite.",
+                type=NexusErrorValue.FETCH_SUITE_ERROR,
+            )
+
     async def create_nexus_es_aggregate_view(
         self,
         *,
@@ -291,12 +319,17 @@ class NexusProjectInterface:
         nexus_es_view_url = (
             f"{settings.NEXUS_DELTA_URI}/views/{str(virtual_lab_id)}/{str(project_id)}"
         )
-        views = [
-            {
-                "project": f"{str(virtual_lab_id)}/{str(project_id)}",
-                "viewId": ES_VIEW_ID,
-            }
-        ] + ES_VIEWS
+        sbo_suite_views = await self.__get_sbo_suite_views()
+        views = (
+            [
+                ProjectView(
+                    project=f"{str(virtual_lab_id)}/{str(project_id)}",
+                    viewId=ES_VIEW_ID,
+                ),
+            ]
+            + ES_VIEWS
+            + sbo_suite_views
+        )
         try:
             response = await self.httpx_clt.post(
                 nexus_es_view_url,
