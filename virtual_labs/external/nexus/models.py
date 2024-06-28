@@ -98,3 +98,18 @@ class NexusElasticSearchViewMapping(BaseModel):
 
 class NexusPermissions(NexusBase):
     permissions: List[str]
+
+
+class NexusSuiteProjects(BaseModel):
+    context: Annotated[str | list[str], Field(alias="@context")] = []
+    name: str
+    projects: str | list[str]
+
+
+ProjectView = TypedDict(
+    "ProjectView",
+    {
+        "project": str,
+        "viewId": str,
+    },
+)
