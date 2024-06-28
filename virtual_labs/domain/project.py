@@ -23,6 +23,11 @@ class ProjectBody(BaseModel):
     description: Optional[str] = None
 
 
+class ProjectUpdateBody(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+
+
 class ProjectCreationBody(ProjectBody):
     include_members: Optional[list[AddUser]] = None
 

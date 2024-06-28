@@ -6,7 +6,7 @@ from loguru import logger
 from pydantic import UUID4
 
 from virtual_labs.core.exceptions.nexus_error import NexusError, NexusErrorValue
-from virtual_labs.domain.project import ProjectBody
+from virtual_labs.domain.project import ProjectUpdateBody
 from virtual_labs.external.nexus.defaults import (
     AG_ES_VIEW_ID,
     AG_SP_VIEW_ID,
@@ -519,7 +519,7 @@ class NexusProjectInterface:
         *,
         virtual_lab_id: UUID4,
         project_id: UUID4,
-        payload: ProjectBody,
+        payload: ProjectUpdateBody,
     ) -> NexusProject:
         project = await self.retrieve_project(
             virtual_lab_id=virtual_lab_id, project_id=project_id
@@ -534,7 +534,7 @@ class NexusProjectInterface:
                     "description": payload.description,
                 },
             )
-            # response.raise_for_status()
+            response.raise_for_status()
 
             data = response.json()
             return NexusProject(**data)

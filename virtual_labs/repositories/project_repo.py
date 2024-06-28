@@ -10,7 +10,10 @@ from sqlalchemy.sql import and_
 
 from virtual_labs.core.types import PaginatedDbResult
 from virtual_labs.domain.common import PageParams
-from virtual_labs.domain.project import ProjectBody, ProjectCreationBody
+from virtual_labs.domain.project import (
+    ProjectCreationBody,
+    ProjectUpdateBody,
+)
 from virtual_labs.infrastructure.db.models import Project, ProjectStar, VirtualLab
 
 
@@ -438,7 +441,7 @@ class ProjectMutationRepository:
         self,
         virtual_lab_id: UUID4,
         project_id: UUID4,
-        payload: ProjectBody,
+        payload: ProjectUpdateBody,
     ) -> Project:
         stmt = (
             update(Project)
@@ -450,8 +453,9 @@ class ProjectMutationRepository:
             )
             .values(
                 {
-                    "name": payload.name,
-                    "description": payload.description,
+                    key: value
+                    for key, value in payload.model_dump(exclude_unset=True).items()
+                    if value is not None
                 }
             )
             .returning(Project)

@@ -19,7 +19,6 @@ from virtual_labs.core.exceptions.api_error import VliError
 from virtual_labs.core.types import UserRoleEnum, VliAppResponse
 from virtual_labs.domain.common import PageParams, PaginatedResultsResponse
 from virtual_labs.domain.project import (
-    ProjectBody,
     ProjectBudgetOut,
     ProjectCreationBody,
     ProjectDeletionOut,
@@ -28,6 +27,7 @@ from virtual_labs.domain.project import (
     ProjectInviteOut,
     ProjectOut,
     ProjectPerVLCountOut,
+    ProjectUpdateBody,
     ProjectUpdateBudgetOut,
     ProjectUpdateRoleOut,
     ProjectUserDetachOut,
@@ -223,7 +223,7 @@ async def retrieve_projects(
 async def update_project_data(
     virtual_lab_id: UUID4,
     project_id: UUID4,
-    payload: ProjectBody,
+    payload: ProjectUpdateBody,
     httpx_client: AsyncClient = Depends(httpx_factory),
     session: AsyncSession = Depends(default_session_factory),
     auth: Tuple[AuthUser, str] = Depends(verify_jwt),
