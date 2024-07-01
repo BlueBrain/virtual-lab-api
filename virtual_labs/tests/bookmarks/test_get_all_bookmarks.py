@@ -20,10 +20,10 @@ mock_bookmarks: list[BookmarkIn] = [
         category=BookmarkCategory.ExperimentalElectroPhysiology,
     ),
     BookmarkIn(
-        resource_id="resource-4", category=BookmarkCategory.ExperimentalBoutonDensity
+        resource_id="resource-4", category=BookmarkCategory.ExperimentsBoutonDensity
     ),
     BookmarkIn(
-        resource_id="resource-5", category=BookmarkCategory.ExperimentalBoutonDensity
+        resource_id="resource-5", category=BookmarkCategory.ExperimentsBoutonDensity
     ),
     BookmarkIn(
         resource_id="resource-6", category=BookmarkCategory.ExperimentalNeuronDensity
@@ -71,7 +71,7 @@ async def test_user_can_get_all_project_bookmarks_by_type(
     data = response.json()["data"]
 
     assert len(data[BookmarkCategory.ExperimentalNeuronMorphology.value]) == 3
-    assert len(data[BookmarkCategory.ExperimentalBoutonDensity.value]) == 2
+    assert len(data[BookmarkCategory.ExperimentsBoutonDensity.value]) == 2
     assert len(data[BookmarkCategory.ExperimentalNeuronDensity.value]) == 2
     assert len(data[BookmarkCategory.ExperimentalElectroPhysiology.value]) == 1
     assert data.get(BookmarkCategory.ExperimentalSynapsePerConnection.value) is None

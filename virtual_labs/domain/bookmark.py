@@ -5,7 +5,7 @@ from pydantic import UUID4, BaseModel, Field
 
 
 class BookmarkCategory(Enum):
-    ExperimentalBoutonDensity = "ExperimentsBoutonDensity"
+    ExperimentsBoutonDensity = "ExperimentsBoutonDensity"
     ExperimentalNeuronDensity = "ExperimentalNeuronDensity"
     ExperimentalElectroPhysiology = "ExperimentalElectroPhysiology"
     ExperimentalSynapsePerConnection = "ExperimentalSynapsePerConnection"
