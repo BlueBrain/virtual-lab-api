@@ -1,6 +1,10 @@
 from typing import Any, Dict, List
 
-from virtual_labs.external.nexus.models import NexusApiMapping, NexusIdentity
+from virtual_labs.external.nexus.models import (
+    NexusApiMapping,
+    NexusIdentity,
+    ProjectView,
+)
 from virtual_labs.infrastructure.settings import settings
 
 AGGREGATE_SPARQL_VIEW = ["View", "AggregateSparqlView"]
@@ -20,7 +24,7 @@ SP_VIEW_ID = "https://bluebrain.github.io/nexus/vocabulary/defaultSparqlIndex"
 AG_ES_VIEW_ID = "https://bbp.epfl.ch/neurosciencegraph/data/views/aggreg-es/dataset"
 AG_SP_VIEW_ID = "https://bbp.epfl.ch/neurosciencegraph/data/views/aggreg-sp/dataset"
 
-ES_VIEWS = [{"project": f"{pr}", "viewId": ES_VIEW_ID} for pr in PROJECTS_TO_AGGREGATE]
+ES_VIEWS = [ProjectView(project=pr, viewId=ES_VIEW_ID) for pr in PROJECTS_TO_AGGREGATE]
 SP_VIEWS = [{"project": f"{pr}", "viewId": SP_VIEW_ID} for pr in PROJECTS_TO_AGGREGATE]
 
 API_MAPPING: List[NexusApiMapping] = []
