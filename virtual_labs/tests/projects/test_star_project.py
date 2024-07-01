@@ -5,10 +5,10 @@ from httpx import AsyncClient, Response
 @pytest.mark.asyncio
 async def test_update_project_star_status_to_starred(
     async_test_client: AsyncClient,
-    mock_create_project: tuple[Response, dict[str, str]],
+    mock_create_project: tuple[Response, dict[str, str], dict[str, str]],
 ) -> None:
     client = async_test_client
-    (response, headers) = mock_create_project
+    (response, headers, _) = mock_create_project
     project_id = response.json()["data"]["project"]["id"]
     virtual_lab_id = response.json()["data"]["virtual_lab_id"]
 
@@ -26,10 +26,10 @@ async def test_update_project_star_status_to_starred(
 @pytest.mark.asyncio
 async def test_update_project_star_status_to_un_starred(
     async_test_client: AsyncClient,
-    mock_create_project: tuple[Response, dict[str, str]],
+    mock_create_project: tuple[Response, dict[str, str], dict[str, str]],
 ) -> None:
     client = async_test_client
-    (response, headers) = mock_create_project
+    (response, headers, _) = mock_create_project
     project_id = response.json()["data"]["project"]["id"]
     virtual_lab_id = response.json()["data"]["virtual_lab_id"]
 

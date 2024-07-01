@@ -120,6 +120,7 @@ async def create_new_project_use_case(
     project_id: UUID4 = uuid4()
     user_id = get_user_id_from_auth(auth)
     failed_invites = []
+
     try:
         vlab = await get_undeleted_virtual_lab(session, virtual_lab_id)
 

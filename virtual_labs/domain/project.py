@@ -1,7 +1,15 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
-from pydantic import UUID4, BaseModel, ConfigDict, EmailStr, Field, computed_field
+from pydantic import (
+    UUID4,
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    StringConstraints,
+    computed_field,
+)
 
 from virtual_labs.core.types import UserRoleEnum
 from virtual_labs.domain.invite import AddUser
@@ -19,13 +27,27 @@ class VirtualLabModel(BaseModel):
 
 
 class ProjectBody(BaseModel):
-    name: str = Field(max_length=250)
-    description: Optional[str] = None
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    name: Annotated[
+        str, StringConstraints(strip_whitespace=True, min_length=1, max_length=250)
+    ]
+    description: Optional[
+        Annotated[str, StringConstraints(strip_whitespace=True)]
+    ] = None
 
 
 class ProjectUpdateBody(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    name: Optional[
+        Annotated[
+            str, StringConstraints(strip_whitespace=True, min_length=1, max_length=250)
+        ]
+    ] = None
+    description: Optional[
+        Annotated[str, StringConstraints(strip_whitespace=True)]
+    ] = None
 
 
 class ProjectCreationBody(ProjectBody):

@@ -11,10 +11,11 @@ from virtual_labs.repositories.group_repo import GroupQueryRepository
 from virtual_labs.tests.utils import get_client_headers
 
 
-def test_vlm_project_creation(
-    mock_create_project: tuple[Response, dict[str, str]],
+@pytest.mark.asyncio
+async def test_vlm_project_creation(
+    mock_create_project: tuple[Response, dict[str, str], dict[str, str]],
 ) -> None:
-    (response, headers) = mock_create_project
+    (response, headers, _) = mock_create_project
 
     assert response.status_code == 200
     project_id = response.json()["data"]["project"]["id"]
@@ -38,6 +39,26 @@ def test_vlm_project_creation(
     )
 
     assert nexus_project.status_code == 200
+
+
+@pytest.mark.parametrize(
+    "mock_create_project",
+    [{"name": " spaced name ", "description": " spaced description "}],
+    indirect=True,
+)
+@pytest.mark.asyncio
+async def test_vlm_project_creation_trim_name_description(
+    mock_create_project: tuple[Response, dict[str, str], dict[str, str]],
+) -> None:
+    (response, headers, payload) = mock_create_project
+
+    assert response.status_code == 200
+
+    project_name = response.json()["data"]["project"]["name"]
+    project_description = response.json()["data"]["project"]["description"]
+
+    assert project_name == payload["name"].strip()
+    assert project_description == payload["description"].strip()
 
 
 @pytest.mark.asyncio

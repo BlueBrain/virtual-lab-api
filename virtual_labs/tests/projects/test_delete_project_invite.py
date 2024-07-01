@@ -12,10 +12,10 @@ from virtual_labs.tests.utils import get_headers
 @pytest_asyncio.fixture
 async def mock_project_invite(
     async_test_client: AsyncClient,
-    mock_create_project: tuple[Response, dict[str, str]],
+    mock_create_project: tuple[Response, dict[str, str], dict[str, str]],
 ) -> AsyncGenerator[tuple[AsyncClient, str, str, str, str], None]:
     client = async_test_client
-    response, headers = mock_create_project
+    response, headers, _ = mock_create_project
     lab_id = response.json()["data"]["virtual_lab_id"]
     project_id = response.json()["data"]["project"]["id"]
     invitee_email = "test-1@test.com"

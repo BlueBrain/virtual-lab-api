@@ -3,6 +3,7 @@ from uuid import UUID, uuid4
 
 import pytest_asyncio
 from httpx import AsyncClient, Response
+from pytest import FixtureRequest
 from sqlalchemy import update
 
 from virtual_labs.infrastructure.db.models import Project, VirtualLab
@@ -22,24 +23,31 @@ VL_PROJECTS_COUNT = 3
 
 @pytest_asyncio.fixture
 async def mock_create_project(
+    request: FixtureRequest,
     async_test_client: AsyncClient,
     mock_lab_create: tuple[Response, dict[str, str]],
-) -> AsyncGenerator[tuple[Response, dict[str, str]], None]:
+) -> AsyncGenerator[tuple[Response, dict[str, str], dict[str, str]], None]:
+    param_name = getattr(request, "param", {"name": f"Test Project {uuid4()}"}).get(
+        "name"
+    )
+    param_desc = getattr(
+        request, "param", {"description": "Test Project description "}
+    ).get("description")
+
     client = async_test_client
     vl_response, headers = mock_lab_create
     virtual_lab_id = vl_response.json()["data"]["virtual_lab"]["id"]
 
     payload = {
-        "name": f"Test Project {uuid4()}",
-        "description": "Test Project",
+        "name": param_name,
+        "description": param_desc,
     }
     response = await client.post(
         f"/virtual-labs/{virtual_lab_id}/projects",
         json=payload,
     )
 
-    assert response.json()["data"]["project"]["name"] == payload["name"]
-    yield response, headers
+    yield response, headers, cast(dict[str, str], payload)
 
 
 @pytest_asyncio.fixture

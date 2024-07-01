@@ -10,10 +10,10 @@ from virtual_labs.tests.utils import get_headers
 @pytest.mark.asyncio
 async def test_invite_user_to_project(
     async_test_client: AsyncClient,
-    mock_create_project: tuple[Response, dict[str, str]],
+    mock_create_project: tuple[Response, dict[str, str], dict[str, str]],
 ) -> None:
     client = async_test_client
-    response, headers = mock_create_project
+    response, headers, _ = mock_create_project
     lab_id = response.json()["data"]["virtual_lab_id"]
     project_id = response.json()["data"]["project"]["id"]
     user_to_invite = "test-1"
@@ -36,10 +36,10 @@ async def test_invite_user_to_project(
 @pytest.mark.asyncio
 async def test_user_already_in_project_cannot_be_reinvited(
     async_test_client: AsyncClient,
-    mock_create_project: tuple[Response, dict[str, str]],
+    mock_create_project: tuple[Response, dict[str, str], dict[str, str]],
 ) -> None:
     client = async_test_client
-    response, headers = mock_create_project
+    response, headers, _ = mock_create_project
     lab_id = response.json()["data"]["virtual_lab_id"]
     project_id = response.json()["data"]["project"]["id"]
     user_to_invite = "test-1"
