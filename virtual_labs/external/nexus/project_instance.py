@@ -27,8 +27,8 @@ async def instantiate_nexus_project(
     virtual_lab_id: UUID4,
     project_id: UUID4,
     description: str | None,
-    admin_group_id: str,
-    member_group_id: str,
+    admin_group_name: str,
+    member_group_name: str,
     auth: Tuple[AuthUser, str],
 ) -> str:
     transport = httpx.AsyncHTTPTransport(retries=3)
@@ -109,7 +109,7 @@ async def instantiate_nexus_project(
         appended_admin_group_acls = await nexus_interface.append_project_acls(
             virtual_lab_id=virtual_lab_id,
             project_id=project_id,
-            group_id=admin_group_id,
+            group_name=admin_group_name,
             permissions=project_admin_acls,
             rev=last_acl_rev,
         )
@@ -119,7 +119,7 @@ async def instantiate_nexus_project(
             nexus_interface.append_project_acls(
                 virtual_lab_id=virtual_lab_id,
                 project_id=project_id,
-                group_id=member_group_id,
+                group_name=member_group_name,
                 permissions=project_member_acls,
                 rev=appended_admin_group_acls.rev,
             ),

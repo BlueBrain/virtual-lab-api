@@ -10,6 +10,7 @@ from virtual_labs.core.types import UserRoleEnum
 from virtual_labs.domain.project import ProjectCreationBody
 from virtual_labs.infrastructure.kc.config import kc_realm
 from virtual_labs.infrastructure.kc.models import (
+    CreatedGroup,
     GroupRepresentation,
     UserRepresentation,
 )
@@ -57,21 +58,18 @@ class GroupMutationRepository:
         vl_id: UUID4,
         vl_name: str,
         role: UserRoleEnum,
-    ) -> str:
+    ) -> CreatedGroup:
         """
         NOTE: you can not set the ID even in the docs says that is Optional
         virtual lab group must be following this format
         vlab/vl-app-id/role
         """
         try:
-            group_id = self.Kc.create_group(
-                {"name": "vlab/{}/{}".format(vl_id, role.value)}
-            )
+            group_name = "vlab/{}/{}".format(vl_id, role.value)
+            group_id = self.Kc.create_group({"name": group_name})
 
-            return cast(
-                str,
-                group_id,
-            )
+            return {"id": group_id, "name": group_name}
+
         # TODO: Add custom Keycloak error class to catch KeyClak errors from keycloak dependencies that are not type safe.
         except Exception as error:
             logger.error(
@@ -89,20 +87,18 @@ class GroupMutationRepository:
         project_id: UUID4,
         role: UserRoleEnum,
         payload: ProjectCreationBody,
-    ) -> str | None:
+    ) -> CreatedGroup | None:
         """
         NOTE: you can not set the ID even in the docs says that is Optional
         project group must be following this format
         proj/virtual_lab_id/project_id/role
         """
+        group_name = "proj/{}/{}/{}".format(virtual_lab_id, project_id, role.value)
         group_id = self.Kc.create_group(
-            {"name": "proj/{}/{}/{}".format(virtual_lab_id, project_id, role.value)},
+            {"name": group_name},
         )
 
-        return cast(
-            str | None,
-            group_id,
-        )
+        return {"id": group_id, "name": group_name}
 
     def delete_group(self, *, group_id: str) -> Any | Dict[str, str]:
         return self.Kc.delete_group(group_id=group_id)

@@ -16,7 +16,7 @@ from virtual_labs.domain import labs as domain
 from virtual_labs.domain.invite import AddUser
 from virtual_labs.external.nexus.create_organization import create_nexus_organization
 from virtual_labs.infrastructure.db import models
-from virtual_labs.infrastructure.kc.models import AuthUser
+from virtual_labs.infrastructure.kc.models import AuthUser, CreatedGroup
 from virtual_labs.infrastructure.stripe.config import stripe_client
 from virtual_labs.repositories import labs as repository
 from virtual_labs.repositories.group_repo import GroupMutationRepository
@@ -29,7 +29,7 @@ from virtual_labs.shared.utils.auth import get_user_id_from_auth
 from virtual_labs.usecases.labs.invite_user_to_lab import send_email_to_user_or_rollback
 from virtual_labs.usecases.plans.verify_plan import verify_plan
 
-GroupIds = dict[Literal["member_group_id"] | Literal["admin_group_id"], str]
+GroupIds = dict[Literal["member_group"] | Literal["admin_group"], CreatedGroup]
 UserInvites = TypedDict(
     "UserInvites",
     {
@@ -43,17 +43,17 @@ async def create_keycloak_groups(lab_id: UUID4, lab_name: str) -> GroupIds:
     kc = GroupMutationRepository()
 
     try:
-        admin_group_id = kc.create_virtual_lab_group(
+        admin_group = kc.create_virtual_lab_group(
             vl_id=lab_id, vl_name=lab_name, role=UserRoleEnum.admin
         )
-        member_group_id = kc.create_virtual_lab_group(
+        member_group = kc.create_virtual_lab_group(
             vl_id=lab_id, vl_name=lab_name, role=UserRoleEnum.member
         )
 
-        assert admin_group_id is not None
-        assert member_group_id is not None
+        assert admin_group is not None
+        assert member_group is not None
 
-        return {"admin_group_id": admin_group_id, "member_group_id": member_group_id}
+        return {"admin_group": admin_group, "member_group": member_group}
     except IdentityError as error:
         raise error
     except Exception as error:
@@ -148,12 +148,12 @@ async def create_virtual_lab(
         new_lab_id = uuid4()
         owner_id = get_user_id_from_auth(auth)
         # Create admin & member groups
-        group_ids = await create_keycloak_groups(new_lab_id, lab.name)
+        groups = await create_keycloak_groups(new_lab_id, lab.name)
 
         # Add user as admin for this lab
         user_repo = UserMutationRepository()
         user_repo.attach_user_to_group(
-            user_id=owner_id, group_id=group_ids["admin_group_id"]
+            user_id=owner_id, group_id=groups["admin_group"]["id"]
         )
     except ValueError as error:
         raise VliError(
@@ -176,13 +176,13 @@ async def create_virtual_lab(
         nexus_org = await create_nexus_organization(
             nexus_org_id=new_lab_id,
             description=lab.description,
-            admin_group_id=group_ids["admin_group_id"],
-            member_group_id=group_ids["member_group_id"],
+            admin_group_name=groups["admin_group"]["name"],
+            member_group_name=groups["member_group"]["name"],
         )
 
     except NexusError as ex:
-        group_repo.delete_group(group_id=group_ids["admin_group_id"])
-        group_repo.delete_group(group_id=group_ids["member_group_id"])
+        group_repo.delete_group(group_id=groups["admin_group"]["id"])
+        group_repo.delete_group(group_id=groups["member_group"]["id"])
         logger.error(f"Error during reverting project instance due nexus error ({ex})")
         raise VliError(
             error_code=VliErrorCode.EXTERNAL_SERVICE_ERROR,
@@ -216,8 +216,8 @@ async def create_virtual_lab(
             id=new_lab_id,
             owner_id=owner_id,
             nexus_organization_id=nexus_org.self,
-            admin_group_id=group_ids["admin_group_id"],
-            member_group_id=group_ids["member_group_id"],
+            admin_group_id=groups["admin_group"]["id"],
+            member_group_id=groups["member_group"]["id"],
             stripe_customer_id=customer.id,
             **lab.model_dump(),
         )

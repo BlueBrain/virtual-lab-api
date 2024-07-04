@@ -125,7 +125,6 @@ async def test_vlm_update_project_name_with_existing_one(
 ) -> None:
     client = async_test_client
     vl_projects, headers = mock_create_full_vl_projects
-    print("vl-projects", vl_projects)
     project_id = vl_projects[0]["id"]
     virtual_lab_id = vl_projects[0]["virtual_lab_id"]
 
