@@ -15,8 +15,8 @@ from virtual_labs.infrastructure.kc.auth import get_client_token
 async def create_nexus_organization(
     nexus_org_id: UUID4,
     description: str | None,
-    admin_group_id: str,
-    member_group_id: str,
+    admin_group_name: str,
+    member_group_name: str,
 ) -> NexusOrganization:
     transport = httpx.AsyncHTTPTransport(retries=3)
     async with httpx.AsyncClient(transport=transport) as httpx_client:
@@ -33,7 +33,7 @@ async def create_nexus_organization(
         # Append acls to the admin group
         admin_acls = await nexus_org_interface.append_org_acls(
             org_id=nexus_org_id,
-            group_id=admin_group_id,
+            group_name=admin_group_name,
             permissions=virtual_lab_admin_acls,
             rev=latest_acl,
         )
@@ -42,7 +42,7 @@ async def create_nexus_organization(
 
         await nexus_org_interface.append_org_acls(
             org_id=nexus_org_id,
-            group_id=member_group_id,
+            group_name=member_group_name,
             permissions=virtual_lab_member_acls,
             rev=admin_acls.rev,
         )

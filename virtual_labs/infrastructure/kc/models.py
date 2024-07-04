@@ -1,4 +1,4 @@
-from typing import Annotated, Any, List
+from typing import Annotated, Any, List, TypedDict
 
 from pydantic import UUID4, BaseModel, EmailStr, Field
 
@@ -52,3 +52,6 @@ class ClientToken(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+CreatedGroup = TypedDict("CreatedGroup", {"id": str, "name": str})

@@ -150,7 +150,7 @@ class NexusProjectInterface:
         *,
         virtual_lab_id: UUID4,
         project_id: UUID4,
-        group_id: str,
+        group_name: str,
         rev: int,
         permissions: List[str] | None = None,
     ) -> NexusAcls:
@@ -168,7 +168,7 @@ class NexusProjectInterface:
                             "identity": {
                                 "@type": "Group",
                                 "realm": settings.KC_REALM_NAME,
-                                "group": str(group_id),
+                                "group": str(group_name),
                             },
                         },
                     ],

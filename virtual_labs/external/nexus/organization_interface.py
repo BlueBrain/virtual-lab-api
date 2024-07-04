@@ -111,7 +111,7 @@ class NexusOrganizationInterface:
         self,
         *,
         org_id: UUID4,
-        group_id: str,
+        group_name: str,
         rev: int,
         permissions: list[str] | None = None,
     ) -> NexusAcls:
@@ -129,7 +129,7 @@ class NexusOrganizationInterface:
                             "identity": {
                                 "@type": "Group",
                                 "realm": settings.KC_REALM_NAME,
-                                "group": str(group_id),
+                                "group": str(group_name),
                             },
                         },
                     ],
@@ -141,7 +141,7 @@ class NexusOrganizationInterface:
             return NexusAcls(**data)
         except Exception as ex:
             logger.error(
-                f"Error when adding acls for lab {org_id}, group {group_id}: {ex}. Response {response.json()}"
+                f"Error when adding acls for lab {org_id}, group {group_name}: {ex}. Response {response.json()}"
             )
             raise NexusError(
                 message=f"Error when adding acls for lab {org_id}",

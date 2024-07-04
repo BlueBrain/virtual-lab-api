@@ -149,26 +149,26 @@ async def create_new_project_use_case(
         )
 
     try:
-        admin_group_id = gmr.create_project_group(
+        admin_group = gmr.create_project_group(
             virtual_lab_id=virtual_lab_id,
             project_id=project_id,
             payload=payload,
             role=UserRoleEnum.admin,
         )
 
-        member_group_id = gmr.create_project_group(
+        member_group = gmr.create_project_group(
             virtual_lab_id=virtual_lab_id,
             project_id=project_id,
             payload=payload,
             role=UserRoleEnum.member,
         )
 
-        assert admin_group_id is not None
-        assert member_group_id is not None
+        assert admin_group is not None
+        assert member_group is not None
 
         umr.attach_user_to_group(
             user_id=user_id,
-            group_id=admin_group_id,
+            group_id=admin_group["id"],
         )
 
     except AssertionError:
@@ -197,14 +197,14 @@ async def create_new_project_use_case(
             virtual_lab_id=virtual_lab_id,
             project_id=project_id,
             description=payload.description,
-            admin_group_id=admin_group_id,
-            member_group_id=member_group_id,
+            admin_group_name=admin_group["name"],
+            member_group_name=member_group["name"],
             auth=auth,
         )
     except NexusError as ex:
         logger.error(f"Error during creating project instance due nexus error ({ex})")
-        gmr.delete_group(group_id=admin_group_id)
-        gmr.delete_group(group_id=member_group_id)
+        gmr.delete_group(group_id=admin_group["id"])
+        gmr.delete_group(group_id=member_group["id"])
 
         raise VliError(
             error_code=VliErrorCode.EXTERNAL_SERVICE_ERROR,
@@ -219,8 +219,8 @@ async def create_new_project_use_case(
             payload=payload,
             virtual_lab_id=virtual_lab_id,
             nexus_project_id=nexus_project_id,
-            admin_group_id=admin_group_id,
-            member_group_id=member_group_id,
+            admin_group_id=admin_group["id"],
+            member_group_id=member_group["id"],
             owner_id=user_id,
         )
 
