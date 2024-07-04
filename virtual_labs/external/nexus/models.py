@@ -106,10 +106,6 @@ class NexusSuiteProjects(BaseModel):
     projects: str | list[str]
 
 
-ProjectView = TypedDict(
-    "ProjectView",
-    {
-        "project": str,
-        "viewId": str,
-    },
-)
+class ProjectView(TypedDict):
+    project: str
+    viewId: str

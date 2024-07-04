@@ -1,8 +1,9 @@
+import asyncio
 import time
 import typing
 from contextlib import asynccontextmanager
 from http import HTTPStatus
-from typing import AsyncGenerator, cast
+from typing import AsyncGenerator, Awaitable, cast
 from uuid import UUID, uuid4
 
 from httpx import AsyncClient, Response
@@ -247,8 +248,8 @@ async def create_confirmed_setup_intent(customer_id: str) -> SetupIntent:
     return intent
 
 
-def wait_until(
-    somepredicate: typing.Any,
+async def wait_until(
+    somepredicate: typing.Callable[..., Awaitable[bool]],
     timeout: int,
     period: float = 0.25,
     *args: typing.Any,
@@ -256,7 +257,7 @@ def wait_until(
 ) -> bool:
     mustend = time.time() + timeout
     while time.time() < mustend:
-        if somepredicate(*args, **kwargs):
+        if await somepredicate(*args, **kwargs):
             return True
-        time.sleep(period)
+        await asyncio.sleep(period)
     return False

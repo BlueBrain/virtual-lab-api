@@ -1,6 +1,7 @@
 from typing import AsyncGenerator
 from uuid import uuid4
 
+import httpx
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, Response
@@ -133,11 +134,12 @@ async def test_aggregate_views_created_on_project_creation(
     project_id = response.json()["data"]["project"]["id"]
     virtual_lab_id = response.json()["data"]["project"]["virtual_lab_id"]
 
-    def views_created() -> bool:
-        nexus_views = get(
-            f"{settings.NEXUS_DELTA_URI}/views/{virtual_lab_id}/{str(project_id)}",
-            headers=get_client_headers(),
-        )
+    async def views_created() -> bool:
+        async with httpx.AsyncClient() as client:
+            nexus_views = await client.get(
+                f"{settings.NEXUS_DELTA_URI}/views/{virtual_lab_id}/{str(project_id)}",
+                headers=get_client_headers(),
+            )
         data = nexus_views.json()
         agg_view = [
             view
@@ -147,5 +149,5 @@ async def test_aggregate_views_created_on_project_creation(
         return len(agg_view) == 1
 
     # Nexus takes some time to return the created views that's why wait until is needed here
-    aggregate_view_created = wait_until(views_created, 5, 0.25)
+    aggregate_view_created = await wait_until(views_created, 5, 0.25)
     assert aggregate_view_created is True
