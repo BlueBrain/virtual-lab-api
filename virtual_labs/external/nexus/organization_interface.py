@@ -129,7 +129,7 @@ class NexusOrganizationInterface:
                             "identity": {
                                 "@type": "Group",
                                 "realm": settings.KC_REALM_NAME,
-                                "group": str(group_name),
+                                "group": f"/{group_name}",
                             },
                         },
                     ],
