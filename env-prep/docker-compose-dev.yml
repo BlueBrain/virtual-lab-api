@@ -104,6 +104,10 @@ services:
         condition: service_started
       postgres:
         condition: service_started
+      storage-service:
+        condition: service_started
+      localstack:
+        condition: service_started
     environment:
       DELTA_PLUGINS: "/opt/docker/plugins/"
       DELTA_EXTERNAL_CONF: "/config/delta-postgres.conf"
@@ -191,3 +195,30 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
       - "172.17.0.1:host-gateway"
+
+  storage-service:
+    container_name: "nexus-storage-service"
+    image: bluebrain/nexus-storage:latest
+    environment:
+      STORAGE_CONFIG_FILE: "/config/storage.conf"
+      KAMON_ENABLED: "false"
+    entrypoint: [ "./bin/storage",
+                  "-Dkamon.modules.prometheus-reporter.enabled=false",
+                  "-Dkamon.modules.jaeger.enabled=false" ]
+    ports:
+      - 8090:8090
+    volumes:
+      - ./config:/config
+
+  localstack:
+    image: localstack/localstack:3.5
+    environment:
+      AWS_ACCESS_KEY_ID: "MY_ACCESS_KEY"
+      AWS_SECRET_ACCESS_KEY: "CHUTCHUT"
+      SERVICES: "s3:4566"
+    ports:
+      - 4566:4566
+    networks:
+      ls:
+        # Set the container IP address in the 10.0.2.0/24 subnet
+        ipv4_address: 10.0.2.21
