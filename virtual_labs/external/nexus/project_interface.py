@@ -30,6 +30,7 @@ from virtual_labs.external.nexus.models import (
     NexusProject,
     NexusResource,
     NexusResultAcl,
+    NexusS3Storage,
     NexusSuiteProjects,
     ProjectView,
 )
@@ -578,4 +579,36 @@ class NexusProjectInterface:
             raise NexusError(
                 message="Error during update nexus project",
                 type=NexusErrorValue.UPDATE_PROJECT_ERROR,
+            )
+
+    async def create_s3_storage(
+        self,
+        *,
+        virtual_lab_id: UUID4,
+        project_id: UUID4,
+    ) -> NexusS3Storage:
+        nexus_storage_url = (
+            f"{settings.NEXUS_DELTA_URI}/storages/{virtual_lab_id}/{project_id}"
+        )
+        try:
+            response = await self.httpx_clt.post(
+                nexus_storage_url,
+                headers=self.headers,
+                json={
+                    "@id": "https://bluebrain.github.io/nexus/vocabulary/defaultS3Storage",
+                    "@type": "S3Storage",
+                    "name": f"{project_id} S3 storage",
+                    "default": True,
+                },
+            )
+
+            response.raise_for_status()
+
+            data = response.json()
+            return NexusS3Storage(**data)
+        except Exception as ex:
+            logger.error(f"Error during creating nexus S3 storage {ex}.")
+            raise NexusError(
+                message="Error during creating nexus S3 storage",
+                type=NexusErrorValue.CREATE_S3_STORAGE_ERROR,
             )
