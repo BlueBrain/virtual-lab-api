@@ -131,6 +131,10 @@ async def instantiate_nexus_project(
             nexus_interface.create_nexus_sp_aggregate_view(
                 virtual_lab_id=virtual_lab_id, project_id=project_id
             ),
+            # Create S3 storage
+            nexus_interface.create_s3_storage(
+                virtual_lab_id=virtual_lab_id, project_id=project_id
+            ),
         ]
 
         await asyncio.gather(
@@ -141,19 +145,5 @@ async def instantiate_nexus_project(
                 )
             )
         )
-
-        # TODO: to confirm why this should be done
-        # last_acl_rev = acls.rev
-        # all_permissions = (await nexus_interface.retrieve_all_permissions()).permissions
-        # nexus_interface.subtract_project_acls(
-        #     virtual_lab_id=virtual_lab_id,
-        #     project_id=project_id,
-        #     permissions=all_permissions,
-        #     identity=prep_subtract_identity(
-        #         realm=settings.KC_REALM_NAME,
-        #         user=str(user_id),
-        #     ),
-        #     revision=last_acl_rev,
-        # )
 
         return nexus_project.self
