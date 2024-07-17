@@ -8,6 +8,7 @@
   "cSpell.words": [
     "asyncpg",
     "autoflush",
+    "boto",
     "datamodels",
     "DBAPI",
     "disableable",

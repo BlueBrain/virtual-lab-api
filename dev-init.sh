@@ -10,6 +10,8 @@ CLIENT_SECRET="obp-secret"
 
 
 # Start containers
+chmod +x ./env-prep/init/init-aws.sh
+ls -l ./env-prep/init/init-aws.sh
 docker compose -f env-prep/docker-compose-dev.yml -p vlm-project up --wait
 
 # Check that delta ready to accept connections
