@@ -109,3 +109,7 @@ class NexusSuiteProjects(BaseModel):
 class ProjectView(TypedDict):
     project: str
     viewId: str
+
+
+class NexusS3Storage(NexusBase):
+    type: Annotated[str | List[str], Field(alias="@type")] = ["Storage", "S3Storage"]
