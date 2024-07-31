@@ -105,7 +105,10 @@ async def mock_create_project_with_users(
     payload = {
         "name": f"Test Project {uuid4()}",
         "description": "Test Project",
-        "include_members": [{"email": "test-1@test.com", "role": "admin"}],
+        "include_members": [
+            {"email": "test-1@test.com", "role": "admin"},
+            {"email": "user-not-in-keycloak@test.com", "role": "admin"},
+        ],
     }
     response = await client.post(
         f"/virtual-labs/{virtual_lab_id}/projects",

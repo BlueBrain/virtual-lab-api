@@ -51,25 +51,23 @@ async def invite_project_members(
             user = user_query_repo.retrieve_user_by_email(member.email)
             inviter = user_query_repo.retrieve_user_from_kc(str(inviter_id))
 
-            if user is None:
-                raise IdentityError(
-                    f"User with email {member.email} not found",
-                    detail="Only users that exist in keycloak can be invited to projects",
-                )
+            invitee_id = UUID(user.id) if user is not None else None
+            invitee_name = None if user is None else f"{user.firstName} {user.lastName}"
+
             try:
                 invite = await invite_repo.add_project_invite(
                     inviter_id=inviter_id,
                     project_id=UUID(str(project.id)),
                     invitee_role=member.role,
-                    invitee_id=UUID(user.id),
-                    invitee_email=str(user.email),
+                    invitee_id=invitee_id,
+                    invitee_email=str(member.email),
                 )
                 await session.refresh(project)
                 await session.refresh(virtual_lab)
                 await send_invite(
                     details=EmailDetails(
-                        recipient=str(user.email),
-                        invitee_name=f"{user.firstName} {user.lastName}",
+                        recipient=str(member.email),
+                        invitee_name=invitee_name,
                         inviter_name=f"{inviter.firstName} {inviter.lastName}",
                         invite_id=UUID(str(invite.id)),
                         lab_id=UUID(str(virtual_lab.id)),
