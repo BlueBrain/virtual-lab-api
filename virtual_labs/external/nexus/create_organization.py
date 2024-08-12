@@ -1,4 +1,5 @@
 import httpx
+from loguru import logger
 from pydantic import UUID4
 
 from virtual_labs.external.nexus.acl_list import (
@@ -25,9 +26,9 @@ async def create_nexus_organization(
         nexus_org = await nexus_org_interface.create_organization(
             nexus_org_id, description
         )
-
         # get the latest organization acl for revision
         acls = await nexus_org_interface.retrieve_latest_org_acls(org_id=nexus_org_id)
+        logger.warn(f"NEXUS ACLS {acls}")
         latest_acl = acls.results[0].rev
 
         # Append acls to the admin group
