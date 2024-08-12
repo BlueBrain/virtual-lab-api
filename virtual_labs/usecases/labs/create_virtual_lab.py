@@ -190,6 +190,13 @@ async def create_virtual_lab(
             message="Nexus organization creation failed",
             details=ex.type,
         )
+    except Exception as ex:
+        logger.error(f"Error when creating nexus origin {ex}")
+        raise VliError(
+            error_code=VliErrorCode.EXTERNAL_SERVICE_ERROR,
+            http_status_code=HTTPStatus.BAD_GATEWAY,
+            message="Nexus organization creation failed",
+        )
 
     try:
         customer = await stripe_client.customers.create_async(
