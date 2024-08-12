@@ -28,7 +28,8 @@ async def create_nexus_organization(
         )
         # get the latest organization acl for revision
         acls = await nexus_org_interface.retrieve_latest_org_acls(org_id=nexus_org_id)
-        logger.warn(f"NEXUS ACLS {acls}")
+        # Remove this log after issue is resolved
+        logger.warning(f"NEXUS ACLS {acls}")
         latest_acl = acls.results[0].rev
 
         # Append acls to the admin group
