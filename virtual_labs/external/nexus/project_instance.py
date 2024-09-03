@@ -9,7 +9,6 @@ from virtual_labs.external.nexus.default_mapping import DEFAULT_MAPPING
 from virtual_labs.external.nexus.defaults import (
     CROSS_RESOLVER,
     DEFAULT_API_MAPPING_RESOURCE,
-    DEFAULT_CROSS_RESOLVER_PROJECTS,
     DEFAULT_PROJECT_VOCAB,
     ES_RESOURCE_TYPE,
     ES_VIEW_ID,
@@ -57,12 +56,12 @@ async def instantiate_nexus_project(
             apiMapping=api_mappings_datamodels,
             description=description,
         )
-        # Add the CrossProject resolver pointing to the neurosciencegraph/datamodels project
+        # Add the CrossProject resolver pointing to projects with public data
         await nexus_interface.create_resolver(
             virtual_lab_id=virtual_lab_id,
             project_id=project_id,
             type=CROSS_RESOLVER,
-            projects=DEFAULT_CROSS_RESOLVER_PROJECTS,
+            projects=settings.NEXUS_CROSS_RESOLVER_PROJECTS,
             identities=[
                 {
                     "realm": settings.KC_REALM_NAME,

@@ -28,7 +28,7 @@ ES_VIEWS = [ProjectView(project=pr, viewId=ES_VIEW_ID) for pr in PROJECTS_TO_AGG
 SP_VIEWS = [{"project": f"{pr}", "viewId": SP_VIEW_ID} for pr in PROJECTS_TO_AGGREGATE]
 
 API_MAPPING: List[NexusApiMapping] = []
-DEFAULT_CROSS_RESOLVER_PROJECTS = ["neurosciencegraph/datamodels"]
+
 DEFAULT_RESOLVER_PRIORITY = 50
 DEFAULT_PROJECT_VOCAB = "https://bbp.epfl.ch/ontologies/core/bmo/"
 DEFAULT_API_MAPPING_RESOURCE = "https://bbp.epfl.ch/nexus/v1/resources/neurosciencegraph/datamodels/_/nexus_api_mappings"
