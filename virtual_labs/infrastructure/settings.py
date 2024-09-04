@@ -40,7 +40,7 @@ class Settings(BaseSettings):
         "postgresql+asyncpg://vlm:vlm@localhost:15432/vlm"
     )
     NEXUS_DELTA_URI: Url = Url("http://localhost:8080/v1")
-    NEXUS_CROSS_RESOLVER_PROJECTS: list[str] = []
+    NEXUS_CROSS_RESOLVER_PROJECTS: list[str] = ["neurosciencegraph/datamodels"]
 
     KC_SERVER_URI: str = "http://localhost:9090/"
     KC_USER_NAME: str = "admin"
