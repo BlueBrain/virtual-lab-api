@@ -44,16 +44,9 @@ def verify_jwt(
 
     try:
         token = header.credentials
-        decoded_token = kc_auth.decode_token(
-            token=token,
-            key=get_public_key(),
-            options={
-                "verify_aut": True,
-                "verify_signature": True,
-                "verify_exp": True,
-            },
-        )
-    except Exception:
+        decoded_token = kc_auth.decode_token(token=token, validate=True)
+    except Exception as error:
+        logger.exception(f"Auth Error {error}")
         raise VliError(
             error_code=VliErrorCode.AUTHORIZATION_ERROR,
             http_status_code=status.UNAUTHORIZED,
@@ -97,4 +90,5 @@ def get_client_token() -> str:
         return ClientToken.model_validate(kc_realm.connection.token).access_token
     except Exception as error:
         logger.error(f"Error retrieving client token {error}")
+        raise error
         raise error
