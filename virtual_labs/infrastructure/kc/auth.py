@@ -93,8 +93,8 @@ def verify_jwt(
 
 def get_client_token() -> str:
     try:
-        token = kc_realm.connection.token
-        return ClientToken.model_validate(token).access_token
+        kc_realm.connection.get_token()  # This refreshes client token
+        return ClientToken.model_validate(kc_realm.connection.token).access_token
     except Exception as error:
         logger.error(f"Error retrieving client token {error}")
         raise error
