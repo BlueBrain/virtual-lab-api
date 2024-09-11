@@ -3,7 +3,7 @@ from http import HTTPStatus as status
 from typing import Any, Callable
 
 from loguru import logger
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 
 from virtual_labs.core.exceptions.api_error import VliError, VliErrorCode
 from virtual_labs.core.exceptions.generic_exceptions import UserNotInList
@@ -60,11 +60,18 @@ def verify_vlab_or_project_read(f: Callable[..., Any]) -> Callable[..., Any]:
 
             is_user_in_list(list_=uniq_users, user_id=str(user_id))
 
-        except SQLAlchemyError:
+        except NoResultFound:
             raise VliError(
                 error_code=VliErrorCode.DATABASE_ERROR,
-                http_status_code=status.BAD_REQUEST,
+                http_status_code=status.NOT_FOUND,
                 message="No project with this id found",
+            )
+        except SQLAlchemyError as e:
+            logger.exception(f"SQL Error: {e}")
+            raise VliError(
+                error_code=VliErrorCode.DATABASE_ERROR,
+                http_status_code=status.INTERNAL_SERVER_ERROR,
+                message="This project could not be retrieved from the db",
             )
         except UserNotInList:
             raise VliError(
