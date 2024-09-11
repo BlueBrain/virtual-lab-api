@@ -2,6 +2,7 @@ from functools import wraps
 from http import HTTPStatus as status
 from typing import Any, Callable
 
+from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
 
 from virtual_labs.core.exceptions.api_error import VliError, VliErrorCode
@@ -67,7 +68,10 @@ def verify_vlab_or_project_write(f: Callable[..., Any]) -> Callable[..., Any]:
                 http_status_code=status.FORBIDDEN,
                 message="The supplied authentication is not authorized for this action",
             )
-        except Exception:
+        except Exception as error:
+            logger.exception(
+                f"Unknown error when checking for vlab_or_project_write: {error}"
+            )
             raise VliError(
                 error_code=VliErrorCode.INTERNAL_SERVER_ERROR,
                 http_status_code=status.BAD_REQUEST,

@@ -52,7 +52,7 @@ def verify_vlab_write(f: Callable[..., Any]) -> Callable[..., Any]:
                 message="The supplied authentication is not authorized for this action",
             )
         except Exception as error:
-            logger.warning(f"Error while checking authorization {error}")
+            logger.exception(f"Error while checking authorization {error}")
             raise VliError(
                 error_code=VliErrorCode.INTERNAL_SERVER_ERROR,
                 http_status_code=status.BAD_REQUEST,
