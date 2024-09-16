@@ -66,7 +66,7 @@ async def instantiate_nexus_project(
             type=CROSS_RESOLVER,
             projects=sbo_suite_projects,
             identities=[
-                NexusIdentity(realm=settings.KC_REALM_NAME, type="Authenticated"),
+                NexusIdentity(realm=settings.KC_REALM_NAME, type="Authenticated")
             ],
         )
         await asyncio.gather(
