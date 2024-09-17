@@ -512,7 +512,6 @@ class NexusProjectInterface:
             ],
             "priority": priority,
         }
-        logger.info(f"Creating nexus resolver {payload}")
 
         if resolver_id:
             payload["@id"] = resolver_id
