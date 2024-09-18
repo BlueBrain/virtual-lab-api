@@ -7,6 +7,7 @@ from fastapi.security import (
     HTTPBearer,
     OAuth2AuthorizationCodeBearer,
 )
+from keycloak import KeycloakError  # type:ignore
 from loguru import logger
 
 from virtual_labs.core.exceptions.api_error import VliError, VliErrorCode
@@ -63,7 +64,15 @@ def verify_jwt(
                 message="Session not active",
                 detail="Session is dead or user not found",
             )
-
+    except KeycloakError as exception:
+        logger.error(f"Keyclock error while token introspection {exception.__str__}")
+        logger.exception(f"Keycloak introspection exception {exception}")
+        raise VliError(
+            error_code=VliErrorCode.AUTHORIZATION_ERROR,
+            http_status_code=status.UNAUTHORIZED,
+            message="Invalid authentication session",
+            details=str(exception),
+        ) from exception
     except Exception as exception:
         raise VliError(
             error_code=VliErrorCode.AUTHORIZATION_ERROR,
