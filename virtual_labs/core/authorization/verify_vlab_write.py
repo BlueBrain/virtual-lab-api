@@ -2,6 +2,7 @@ from functools import wraps
 from http import HTTPStatus as status
 from typing import Any, Callable
 
+from keycloak import KeycloakError  # type: ignore
 from loguru import logger
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 
@@ -57,6 +58,15 @@ def verify_vlab_write(f: Callable[..., Any]) -> Callable[..., Any]:
                 error_code=VliErrorCode.NOT_ALLOWED_OP,
                 http_status_code=status.FORBIDDEN,
                 message="The supplied authentication is not authorized for this action",
+            )
+        except KeycloakError as error:
+            logger.error(f"Keycloak error MESSAGE: {error.__str__}")
+            logger.exception(f"Keycloak get error {error}")
+            raise VliError(
+                error_code=VliErrorCode.INTERNAL_SERVER_ERROR,
+                http_status_code=status.BAD_REQUEST,
+                message="Checking for authorization failed",
+                details=error.__str__,
             )
         except Exception as error:
             logger.exception(f"Error while checking authorization {error}")
