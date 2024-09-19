@@ -77,7 +77,9 @@ def verify_vlab_or_project_write(f: Callable[..., Any]) -> Callable[..., Any]:
                 message="The supplied authentication is not authorized for this action",
             )
         except KeycloakError as error:
-            logger.error(f"Keycloak error MESSAGE: {error.__str__}")
+            logger.error(
+                f"Keycloak error MESSAGE: {error.response_code} {error.response_body} {error.error_message}"
+            )
             logger.exception(f"Keycloak get error {error}")
             raise VliError(
                 error_code=VliErrorCode.INTERNAL_SERVER_ERROR,

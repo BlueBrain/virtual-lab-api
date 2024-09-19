@@ -63,7 +63,9 @@ def verify_vlab_read(f: Callable[..., Any]) -> Callable[..., Any]:
                 message="The supplied authentication is not authorized for this action",
             )
         except KeycloakError as error:
-            logger.error(f"Keycloak error MESSAGE: {error.__str__}")
+            logger.error(
+                f"Keycloak error MESSAGE: {error.response_code} {error.response_body} {error.error_message}"
+            )
             logger.exception(f"Keycloak get error {error}")
             raise VliError(
                 error_code=VliErrorCode.INTERNAL_SERVER_ERROR,
@@ -72,7 +74,7 @@ def verify_vlab_read(f: Callable[..., Any]) -> Callable[..., Any]:
                 details=error.__str__,
             )
         except Exception as error:
-            logger.exception(f"Unknown error when checking for vlab_read: {error}")
+            logger.exception(f" : {error}")
             raise VliError(
                 error_code=VliErrorCode.INTERNAL_SERVER_ERROR,
                 http_status_code=status.BAD_REQUEST,
