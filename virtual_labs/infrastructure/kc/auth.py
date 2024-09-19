@@ -46,6 +46,17 @@ def verify_jwt(
     try:
         token = header.credentials
         decoded_token = kc_auth.decode_token(token=token, validate=True)
+    except KeycloakError as exception:
+        logger.error(
+            f"Keyclock error while decoding token CODE: {exception.response_code} BODY: {exception.response_body} MESSAGE: {exception.error_message}"
+        )
+        logger.exception(f"Keycloak decode exception {exception}")
+        raise VliError(
+            error_code=VliErrorCode.AUTHORIZATION_ERROR,
+            http_status_code=status.UNAUTHORIZED,
+            message="Invalid authentication session",
+            details=str(exception),
+        ) from exception
     except Exception as error:
         logger.exception(f"Auth Error {error}")
         raise VliError(
