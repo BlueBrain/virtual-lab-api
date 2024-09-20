@@ -53,7 +53,7 @@ def verify_jwt(
         logger.exception(f"Keycloak decode exception {exception}")
         raise VliError(
             error_code=VliErrorCode.AUTHORIZATION_ERROR,
-            http_status_code=status.UNAUTHORIZED,
+            http_status_code=exception.response_code or status.UNAUTHORIZED,
             message="Invalid authentication session",
             details=str(exception),
         ) from exception
@@ -80,7 +80,7 @@ def verify_jwt(
         logger.exception(f"Keycloak introspection exception {exception}")
         raise VliError(
             error_code=VliErrorCode.AUTHORIZATION_ERROR,
-            http_status_code=status.UNAUTHORIZED,
+            http_status_code=exception.response_code or status.UNAUTHORIZED,
             message="Invalid authentication session",
             details=str(exception),
         ) from exception
@@ -110,5 +110,4 @@ def get_client_token() -> str:
         return ClientToken.model_validate(kc_realm.connection.token).access_token
     except Exception as error:
         logger.error(f"Error retrieving client token {error}")
-        raise error
         raise error

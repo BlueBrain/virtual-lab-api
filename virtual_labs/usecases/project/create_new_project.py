@@ -178,7 +178,7 @@ async def create_new_project_use_case(
     except KeycloakError as ex:
         logger.error(f"Error during creating/attaching to group in KC: ({ex})")
         raise VliError(
-            error_code=VliErrorCode.EXTERNAL_SERVICE_ERROR,
+            error_code=ex.response_code or VliErrorCode.EXTERNAL_SERVICE_ERROR,
             http_status_code=status.BAD_REQUEST,
             message="KC Group creation/attaching failed",
         )

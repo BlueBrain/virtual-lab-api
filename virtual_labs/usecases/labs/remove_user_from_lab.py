@@ -53,7 +53,7 @@ async def remove_user_from_lab(lab_id: UUID4, user_id: UUID4, db: AsyncSession) 
         )
         raise VliError(
             error_code=VliErrorCode.EXTERNAL_SERVICE_ERROR,
-            http_status_code=HTTPStatus.BAD_GATEWAY,
+            http_status_code=error.response_code or HTTPStatus.BAD_GATEWAY,
             message="Removing user from virtual lab failed due to a keycloak error",
         )
     except VliError as error:

@@ -69,7 +69,7 @@ def verify_vlab_read(f: Callable[..., Any]) -> Callable[..., Any]:
             logger.exception(f"Keycloak get error {error}")
             raise VliError(
                 error_code=VliErrorCode.INTERNAL_SERVER_ERROR,
-                http_status_code=status.BAD_REQUEST,
+                http_status_code=error.response_code or status.BAD_REQUEST,
                 message="Checking for authorization failed",
                 details=error.__str__,
             )

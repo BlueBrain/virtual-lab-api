@@ -82,7 +82,7 @@ async def delete_project_use_case(
     except KeycloakError as ex:
         logger.warning(f"project deletion from KC: {loads(ex.error_message)["error"]}")
         raise VliError(
-            error_code=VliErrorCode.EXTERNAL_SERVICE_ERROR,
+            error_code=ex.response_code or VliErrorCode.EXTERNAL_SERVICE_ERROR,
             http_status_code=ex.response_code,
             message="Group deletion failed",
             details=loads(ex.error_message)["error"],

@@ -14,9 +14,7 @@ from virtual_labs.core.exceptions.generic_exceptions import UserNotInList
 from virtual_labs.core.response.api_response import VliResponse
 from virtual_labs.core.types import UserRoleEnum
 from virtual_labs.infrastructure.kc.models import AuthUser
-from virtual_labs.repositories.project_repo import (
-    ProjectQueryRepository,
-)
+from virtual_labs.repositories.project_repo import ProjectQueryRepository
 from virtual_labs.repositories.user_repo import (
     UserMutationRepository,
     UserQueryRepository,
@@ -92,7 +90,7 @@ async def update_user_role_in_project(
         )
         raise VliError(
             error_code=VliErrorCode.EXTERNAL_SERVICE_ERROR,
-            http_status_code=status.BAD_GATEWAY,
+            http_status_code=error.response_code or status.BAD_GATEWAY,
             message="Update user role in project failed",
         )
     except UserNotInList:

@@ -118,7 +118,7 @@ async def change_user_role_for_lab(
         )
         raise VliError(
             error_code=VliErrorCode.EXTERNAL_SERVICE_ERROR,
-            http_status_code=HTTPStatus.BAD_GATEWAY,
+            http_status_code=error.response_code or HTTPStatus.BAD_GATEWAY,
             message="Removing user from virtual lab failed due to a keycloak error",
         )
     except VliError as error:
