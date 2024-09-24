@@ -13,10 +13,10 @@ acls_payload = {
                 "@type": "User",
             },
             "permissions": [
-                "version/read",
                 "acls/read",
                 "acls/write",
                 "events/read",
+                "export/run",
                 "files/write",
                 "organizations/create",
                 "organizations/read",
@@ -24,22 +24,22 @@ acls_payload = {
                 "permissions/read",
                 "permissions/write",
                 "projects/create",
+                "projects/delete",
                 "projects/read",
                 "projects/write",
-                "projects/delete",
+                "quotas/read",
                 "realms/read",
                 "realms/write",
                 "resolvers/write",
                 "resources/read",
                 "resources/write",
                 "schemas/write",
-                "views/query",
-                "views/write",
                 "storages/write",
-                "quotas/read",
                 "supervision/read",
                 "typehierarchy/write",
-                "export/run",
+                "version/read",
+                "views/query",
+                "views/write",
             ],
         }
     ],
@@ -54,14 +54,16 @@ public_project_acl = {
                 "@type": "Authenticated",
             },
             "permissions": [
-                "version/read",
+                "export/run",
+                "organizations/read",
+                "permissions/read",
                 "projects/read",
+                "quotas/read",
                 "realms/read",
                 "resources/read",
-                "views/query",
-                "quotas/read",
                 "supervision/read",
-                "export/run",
+                "version/read",
+                "views/query",
             ],
         }
     ],
@@ -153,7 +155,7 @@ print_response(nexus_conn)
 
 nexus_conn.request(
     "PATCH",
-    "/v1/acls/neurosciencegraph/datamodels",
+    "/v1/acls/neurosciencegraph/datamodels?rev=1",
     json.dumps(public_project_acl),
     client_headers,
 )
@@ -168,7 +170,7 @@ nexus_conn.request("PUT", "/v1/projects/bbp/atlas", project_payload, client_head
 print_response(nexus_conn)
 
 nexus_conn.request(
-    "PATCH", "/v1/acls/bbp/atlas", json.dumps(public_project_acl), client_headers
+    "PATCH", "/v1/acls/bbp/atlas?rev=1", json.dumps(public_project_acl), client_headers
 )
 print_response(nexus_conn)
 
