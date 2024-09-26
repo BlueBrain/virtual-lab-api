@@ -26,6 +26,7 @@ pyjwt = "^2.8.0"
 asyncpg = "^0.29.0"
 asyncpg-stubs = "^0.29.1"
 stripe = "^9.6.0"
+sentry-sdk = {extras = ["fastapi"], version = "^2.14.0"}
 
 
 [tool.poetry.group.dev.dependencies]

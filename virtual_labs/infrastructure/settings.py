@@ -69,6 +69,10 @@ class Settings(BaseSettings):
     STRIPE_DEVICE_NAME: str = ""
     STRIPE_WEBHOOK_SECRET: str = getenv("STRIPE_WEBHOOK_SECRET", "")
 
+    SENTRY_DSN: str | None = None
+    SENTRY_TRACES_SAMPLE_RATE: float = 1.0
+    SENTRY_PROFILES_SAMPLE_RATE: float = 1.0
+
     @field_validator("DATABASE_URI", mode="before")
     @classmethod
     def build_db_connection(cls, v: Optional[str], values: ValidationInfo) -> Any:

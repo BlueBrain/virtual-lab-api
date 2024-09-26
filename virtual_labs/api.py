@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from http import HTTPStatus
 from typing import Any, Generator
 
+import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
@@ -9,6 +10,7 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRouter
 from loguru import logger
+from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from starlette.middleware.cors import CORSMiddleware
 
 from virtual_labs.core.exceptions.api_error import (
@@ -20,13 +22,13 @@ from virtual_labs.core.schemas import api
 from virtual_labs.infrastructure.db.config import session_pool
 from virtual_labs.infrastructure.settings import settings
 from virtual_labs.routes.billing import router as billing_router
+from virtual_labs.routes.bookmarks import router as bookmarks_router
 from virtual_labs.routes.common import router as common_router
-from virtual_labs.routes.payments import router as payments_router
 from virtual_labs.routes.invites import router as invite_router
 from virtual_labs.routes.labs import router as virtual_lab_router
+from virtual_labs.routes.payments import router as payments_router
 from virtual_labs.routes.plans import router as plans_router
 from virtual_labs.routes.projects import router as project_router
-from virtual_labs.routes.bookmarks import router as bookmarks_router
 
 
 @asynccontextmanager  # type: ignore
@@ -35,6 +37,13 @@ async def lifespan(app: FastAPI) -> Generator[None, Any, None]:  # type: ignore
     if session_pool._engine is not None:
         await session_pool.close()
 
+
+sentry_sdk.init(
+    dsn=settings.SENTRY_DSN,
+    traces_sample_rate=settings.SENTRY_TRACES_SAMPLE_RATE,
+    profiles_sample_rate=settings.SENTRY_PROFILES_SAMPLE_RATE,
+    environment=settings.DEPLOYMENT_ENV,
+)
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -109,6 +118,7 @@ async def validation_exception_handler(
     )
 
 
+app.add_middleware(SentryAsgiMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
