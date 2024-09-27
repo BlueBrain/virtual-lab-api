@@ -53,6 +53,20 @@ app = FastAPI(
     docs_url=f"{settings.BASE_PATH}/docs",
 )
 
+origins = []
+if settings.CORS_ORIGINS:
+    for origin in settings.CORS_ORIGINS:
+        origins.append(origin)
+
+app.add_middleware(SentryAsgiMiddleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 def custom_openapi() -> dict[str, Any]:
     if app.openapi_schema:
@@ -74,11 +88,6 @@ def custom_openapi() -> dict[str, Any]:
 app.openapi = custom_openapi  # type: ignore
 
 base_router = APIRouter(prefix=settings.BASE_PATH)
-
-origins = []
-if settings.CORS_ORIGINS:
-    for origin in settings.CORS_ORIGINS:
-        origins.append(origin)
 
 
 @app.exception_handler(VliError)
@@ -116,16 +125,6 @@ async def validation_exception_handler(
             {"error_code": VliErrorCode.INVALID_REQUEST, "details": errors}
         ),
     )
-
-
-app.add_middleware(SentryAsgiMiddleware)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 @base_router.get("/")
