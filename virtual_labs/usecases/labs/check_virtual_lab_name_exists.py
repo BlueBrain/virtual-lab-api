@@ -15,7 +15,10 @@ async def check_virtual_lab_name_exists(db: AsyncSession, name: str) -> LabExist
     try:
         if name.strip() == "":
             return {"exists": True}
-        return {"exists": await repository.count_virtual_labs_with_name(db, name) > 0}
+        return {
+            "exists": await repository.count_virtual_labs_with_name(db, name.strip())
+            > 0
+        }
     except SQLAlchemyError as error:
         logger.error(f"Db error when checking if lab with name exists: {error}")
         raise VliError(
@@ -26,9 +29,9 @@ async def check_virtual_lab_name_exists(db: AsyncSession, name: str) -> LabExist
     except VliError as error:
         raise error
     except Exception as error:
-        logger.error(f"Unkown error when checking lab with name exists: {error}")
+        logger.error(f"Unknown error when checking lab with name exists: {error}")
         raise VliError(
-            message=f"Unkown error when checking lab with name exists. {error}",
+            message=f"Unknown error when checking lab with name exists. {error}",
             error_code=VliErrorCode.INTERNAL_SERVER_ERROR,
             http_status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
         ) from error

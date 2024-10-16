@@ -2,6 +2,7 @@ from http import HTTPStatus as status
 
 from fastapi.responses import Response
 from loguru import logger
+from pydantic import UUID4
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,18 +12,21 @@ from virtual_labs.repositories.project_repo import ProjectQueryRepository
 
 
 async def check_project_existence_use_case(
-    session: AsyncSession, query_term: str | None
+    session: AsyncSession, virtual_lab_id: UUID4, query_term: str | None
 ) -> Response:
     pr = ProjectQueryRepository(session)
 
-    if not query_term:
+    if not query_term or not query_term.strip():
         raise VliError(
             error_code=VliErrorCode.INVALID_PARAMETER,
             http_status_code=status.BAD_REQUEST,
             message="No search query provided",
         )
     try:
-        projects_count = await pr.check_project_exists_by_name(query_term=query_term)
+        projects_count = await pr.check_project_exists_by_name_per_vlab(
+            vlab_id=virtual_lab_id,
+            query_term=query_term.strip(),
+        )
 
         return VliResponse.new(
             message=(

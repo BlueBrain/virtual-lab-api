@@ -83,23 +83,6 @@ async def search_projects(
 
 
 @router.get(
-    "/projects/_check",
-    operation_id="check_project_existence_in_app",
-    summary="Look for projects with the same name (case insensitive)",
-    response_model=VliAppResponse[ProjectExistenceOut],
-)
-async def check_project_existence(
-    q: str | None = Query("", description="query string"),
-    session: AsyncSession = Depends(default_session_factory),
-    _: Tuple[AuthUser, str] = Depends(verify_jwt),
-) -> Response | VliError:
-    return await project_cases.check_project_existence_use_case(
-        session,
-        query_term=q,
-    )
-
-
-@router.get(
     "/projects/stars",
     operation_id="get_star_projects",
     summary="Retrieve star projects",
@@ -124,6 +107,25 @@ async def retrieve_stars_project(
             page=page,
             size=size,
         ),
+    )
+
+
+@router.get(
+    "/{virtual_lab_id}/projects/_check",
+    operation_id="check_project_existence_in_vlab",
+    summary="Look for projects with the same name (case insensitive) in the same virtual lab",
+    response_model=VliAppResponse[ProjectExistenceOut],
+)
+async def check_project_existence(
+    virtual_lab_id: UUID4,
+    q: str | None = Query("", description="query string"),
+    session: AsyncSession = Depends(default_session_factory),
+    _: Tuple[AuthUser, str] = Depends(verify_jwt),
+) -> Response | VliError:
+    return await project_cases.check_project_existence_use_case(
+        session,
+        virtual_lab_id,
+        query_term=q,
     )
 
 
