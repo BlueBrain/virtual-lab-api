@@ -36,7 +36,7 @@ class ShortenedUser(BaseModel):
     @computed_field  # type: ignore
     @property
     def name(self) -> str:
-        return f"{self.last_name} {self.first_name}"
+        return f"{self.first_name} {self.last_name}"
 
     class Config:
         from_attributes = True
