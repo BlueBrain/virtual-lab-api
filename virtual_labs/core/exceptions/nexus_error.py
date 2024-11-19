@@ -1,4 +1,5 @@
 from enum import StrEnum
+from http import HTTPStatus
 
 
 # TODO: NOTE: do we keep the suffix ERROR or not ?
@@ -30,18 +31,27 @@ class NexusErrorValue(StrEnum):
 
     CREATE_S3_STORAGE_ERROR = "NEXUS_CREATE_S3_STORAGE_ERROR"
 
+    GET_AGENT_ERROR = "NEXUS_GET_AGENT_ERROR"
+    CREATE_AGENT_ERROR = "CREATE_AGENT_ERROR"
+
     GENERIC_ERROR = "NEXUS_GENERIC_ERROR"
 
 
 class NexusError(Exception):
     message: str | None
     type: NexusErrorValue | None
+    http_status_code: HTTPStatus | None
 
     def __init__(
-        self, *, message: str | None = None, type: NexusErrorValue | None = None
+        self,
+        *,
+        message: str | None = None,
+        type: NexusErrorValue | None = None,
+        http_status_code: HTTPStatus | None = None,
     ) -> None:
         self.message = message
         self.type = type
+        self.http_status_code = http_status_code
         super().__init__(self.message)
 
     def __str__(self) -> str:

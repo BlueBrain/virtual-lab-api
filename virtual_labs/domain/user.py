@@ -52,3 +52,11 @@ class AllUsersCount(BaseModel):
 class UserWithInviteStatus(ShortenedUser):
     invite_accepted: bool
     role: UserRoleEnum
+
+
+class UserAgentResponse(BaseModel):
+    id: str
+    given_name: str
+    family_name: str
+    name: str
+    createdAt: datetime

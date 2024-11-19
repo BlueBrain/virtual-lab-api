@@ -95,6 +95,7 @@ services:
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
 
   delta:
+    container_name: delta
     depends_on:
       keycloak:
         condition: service_started

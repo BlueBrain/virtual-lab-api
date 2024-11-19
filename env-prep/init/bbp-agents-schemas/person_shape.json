@@ -1,0 +1,22 @@
+{
+    "@context": [
+      {
+        "this": "https://neuroshapes.org/dash/person/shapes/"
+      }
+    ],
+    "@id": "https://neuroshapes.org/dash/person",
+    "@type": "Schema",
+    "imports": [
+      "nsg:commons/person"
+    ],
+    "shapes": [
+      {
+        "@id": "https://neuroshapes.org/dash/person/shapes/PersonShape",
+        "@type": "NodeShape",
+        "label": "Schema.org person specification is used as a vocabulary to describe a person.",
+        "node": "nsg:commons/person/shapes/PersonShape",
+        "nodeKind": "sh:BlankNodeOrIRI",
+        "targetClass": "schema:Person"
+      }
+    ]
+}

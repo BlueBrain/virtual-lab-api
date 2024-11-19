@@ -1,7 +1,10 @@
 # type: ignore
 import http.client
 import json
+import logging
 import os
+
+import requests
 
 acls_payload = {
     "@type": "Append",
@@ -80,6 +83,7 @@ KC_PASSWORD = "admin"
 KC_CLIENT_ID = "obpapp"
 KC_CLIENT_SECRET = "obp-secret"
 KC_REALM_NAME = "obp-realm"
+NEXUS_BASEURL = "http://localhost:8080"
 
 
 def print_response(nexus_conn):
@@ -139,7 +143,7 @@ client_headers = {
 # print("USER_TOKEN:\n", user_id, "\n")
 
 
-print("---- #1 append ACLs to the user 'test' \n")
+print("---- #1 append ACLs to the nexus client \n")
 nexus_conn.request("PATCH", "/v1/acls", json.dumps(acls_payload), client_headers)
 print_response(nexus_conn)
 
@@ -162,7 +166,7 @@ nexus_conn.request(
 print_response(nexus_conn)
 
 
-print("---- #3- create bbp/atlas (org/project) \n")
+print("---- #3- create bbp/atlas org/project \n")
 nexus_conn.request("PUT", "/v1/orgs/bbp", org_payload, client_headers)
 print_response(nexus_conn)
 
@@ -175,7 +179,90 @@ nexus_conn.request(
 print_response(nexus_conn)
 
 
-print("---- #4 create dataset es view for  neurosciencegraph/datamodels \n")
+def log_nexus_response(
+    response: requests.Response, message: str = "Response is", warning_message: str = ""
+):
+    if response.status_code >= 200 and response.status_code <= 300:
+        logging.info(f"{message} : {response.json()}")
+    else:
+        logging.warning(f"Error in dev setup. {warning_message} : {response.json()}")
+
+
+print("---- #4- Setup bbp/agents project \n")
+AGENTS_SETUP_WARNING = "This might affect agents feature"
+response = requests.put(
+    url=f"{NEXUS_BASEURL}/v1/projects/bbp/agents",
+    headers=client_headers,
+    data=json.dumps({"description": "description"}),
+)
+log_nexus_response(
+    response=response,
+    message="Agent project creation",
+    warning_message=AGENTS_SETUP_WARNING,
+)
+
+response = requests.patch(
+    url=f"{NEXUS_BASEURL}/v1/acls/bbp/agents?rev=1",
+    headers=client_headers,
+    data=json.dumps(public_project_acl),
+)
+log_nexus_response(
+    response=response,
+    message="Agent project - acls",
+    warning_message=AGENTS_SETUP_WARNING,
+)
+
+with open(os.path.join(__location__, "neuroshapes_org_resource.json")) as f:
+    data = json.dumps(json.load(f))
+    response = requests.put(
+        url=f"{NEXUS_BASEURL}/v1/resources/bbp/agents/_/https%3A%2F%2Fneuroshapes.org",
+        data=data,
+        headers=client_headers,
+    )
+    log_nexus_response(
+        response=response,
+        message="Agents project - neuroshapes.org resource",
+        warning_message=AGENTS_SETUP_WARNING,
+    )
+
+
+response = requests.post(
+    url=f"{NEXUS_BASEURL}/v1/resources/bbp/agents/_",
+    headers=client_headers,
+    data=json.dumps(
+        {
+            "@context": [
+                "https://neuroshapes.org",
+                {"@vocab": "https://bbp.epfl.ch/ontologies/core/bmo/"},
+            ],
+            "@id": "https://bbp.neuroshapes.org",
+        }
+    ),
+)
+log_nexus_response(
+    response=response,
+    message="Agents project - context",
+    warning_message=AGENTS_SETUP_WARNING,
+)
+
+with open(os.path.join(__location__, "bbp-agents-schemas/person_shape.json")) as f:
+    data = json.dumps(json.load(f))
+
+    response = requests.post(
+        url=f"{NEXUS_BASEURL}/v1/schemas/bbp/agents",
+        headers=client_headers,
+        data=data,
+    )
+    log_nexus_response(
+        response=response,
+        message="Agents project - person shape",
+        warning_message=AGENTS_SETUP_WARNING,
+    )
+
+print("bbp/agents setup done.")
+# -------------------------------------bbp/agents setup done----------------------------------------------------
+
+print("---- #5 create dataset es view for  neurosciencegraph/datamodels \n")
 with open(os.path.join(__location__, "es_view_dataset_payload.json")) as f:
     data = json.dumps(json.load(f))
 

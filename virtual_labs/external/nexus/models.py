@@ -114,3 +114,9 @@ class ProjectView(TypedDict):
 
 class NexusS3Storage(NexusBase):
     type: Annotated[str | List[str], Field(alias="@type")] = ["Storage", "S3Storage"]
+
+
+class NexusUserAgent(NexusBase):
+    family_name: Annotated[str, Field(alias="familyName")]
+    given_name: Annotated[str, Field(alias="givenName")]
+    name: str

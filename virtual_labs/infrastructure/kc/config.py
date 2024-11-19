@@ -1,11 +1,9 @@
-from keycloak import KeycloakOpenID  # type: ignore
-from keycloak import KeycloakAdmin
+from keycloak import KeycloakAdmin, KeycloakOpenID  # type: ignore
 
 from virtual_labs.infrastructure.settings import settings
 
 """
     will have many realms 
-    so for every realm we should configure another instance of connection
     or we should have service account and then use the credentials for every realm
     change realm_name depends on the user token for further ops
 """
