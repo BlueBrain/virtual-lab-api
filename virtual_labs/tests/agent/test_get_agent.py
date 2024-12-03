@@ -20,6 +20,7 @@ async def test_get_agent(async_test_client: AsyncClient) -> None:
         "given_name": user,
         "family_name": user,
         "name": f"{user} {user}",
+        "type": ["Agent", "Person"],
     }
 
     gotten_agent_response = response.json()["data"]

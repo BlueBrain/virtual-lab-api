@@ -60,3 +60,4 @@ class UserAgentResponse(BaseModel):
     family_name: str
     name: str
     createdAt: datetime
+    type: list[str]
