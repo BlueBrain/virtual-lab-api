@@ -1,3 +1,7 @@
+> [!WARNING]
+> The Blue Brain Project concluded in December 2024, so development has ceased under the BlueBrain GitHub organization.
+> Future development will take place at: https://github.com/openbraininstitute/virtual-lab-api
+
 # Virtual Labs API
 
 This is the repository for the REST api that is used to manage virtual labs and their projects, primarily by the [core-web-app](https://github.com/BlueBrain/core-web-app). 
